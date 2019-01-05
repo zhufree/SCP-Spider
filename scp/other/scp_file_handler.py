@@ -1,11 +1,11 @@
 import csv
 import sqlite3
 csv.field_size_limit(100000000)
-bad_link_list = ['/', '/scp-series', '/scp-series-cn', '/series-archive',\
+bad_link_list = ['/', '/other-series', '/other-series-cn', '/series-archive',\
         '/series-archive-cn', '/tales-cn-by-page-name','/tales-by-page-name', \
         '/tales-cn-by-create-time', '/canon-hub', '/canon-hub-cn', '/contest-archive', \
-        '/contest-archive-cn', 'joke-scps-cn', 'joke-scps', 'archived-scps', 'scp-ex', \
-        '/decommissioned-scps-arc', '/scp-removed', '/foundation-tales']
+        '/contest-archive-cn', 'joke-scps-cn', 'joke-scps', 'archived-scps', 'other-ex', \
+        '/decommissioned-scps-arc', '/other-removed', '/foundation-tales']
 
 # 合并文件，把前缀相同的文件合并成一个
 def merge_files(file_name_list, file_prefix):
@@ -20,13 +20,13 @@ def merge_files(file_name_list, file_prefix):
     
 
 def merge_all_file():
-    files = ['scp/' + name for name in os.listdir('scp/')]
+    files = ['other/' + name for name in os.listdir('other/')]
     print(files)
     # merge_files(files[0:13], 'scp-1') # 7m
     # merge_files(files[13:19], 'scp-2') # 40m
     # merge_files(files[19:27], 'scp-3') # 31m
     # merge_files(files[27:], 'scp-4') # 31m
-    merge_files(files, 'scp-category') # 31m
+    merge_files(files, 'other-category') # 31m
 
 # 写入scp list
 def write_to_csv(article_list, file_name):
@@ -85,11 +85,11 @@ def get_scps_from_file(filename):
 
 
 def merge_new_link_to_old():
-    bad_link_list = ['/', '/scp-series', '/scp-series-cn', '/series-archive',\
+    bad_link_list = ['/', '/other-series', '/other-series-cn', '/series-archive',\
         '/series-archive-cn', '/tales-cn-by-page-name','/tales-by-page-name', \
         '/tales-cn-by-create-time', '/canon-hub', '/canon-hub-cn', '/contest-archive', \
-        '/contest-archive-cn', 'joke-scps-cn', 'joke-scps', 'archived-scps', 'scp-ex', \
-        '/decommissioned-scps-arc', '/scp-removed', '/foundation-tales']
+        '/contest-archive-cn', 'joke-scps-cn', 'joke-scps', 'archived-scps', 'other-ex', \
+        '/decommissioned-scps-arc', '/other-removed', '/foundation-tales']
     base_link_list = get_list_from_file('category_list.txt')
     new_link_list = get_list_from_file('new_found_link.txt')
     real_new_link_list = []
@@ -124,7 +124,7 @@ def select_scp_by_real_link():
         if add_flag == True:
             real_new_scp.append(scp)
     write_to_csv(real_new_scp, "final_new_scp.csv")
-    print('new found scp size = ' + str(len(real_new_scp)))
+    print('new found other size = ' + str(len(real_new_scp)))
 
 def get_new_round_detail():
     final_total_link_list = get_list_from_file('final_category_list.txt')
@@ -132,30 +132,30 @@ def get_new_round_detail():
     link_list = get_list_from_file('final_new_found_link.txt')
     get_detail_by_link_list(link_list, final_total_link_list, scp_list)
     write_to_csv(new_found_category_list, "new-found-category-1.csv")
-    write_to_csv(scp_list, "scp-category-new-1.csv")
+    write_to_csv(scp_list, "other-category-new-1.csv")
 
 def fix_not_found():
     final_total_link_list = get_list_from_file('final_category_list.txt')
-    not_found_list = get_not_found_category_from_file('scp-category-new-1.csv')
-    all_list = get_scps_from_file('scp-category-new-1.csv')
+    not_found_list = get_not_found_category_from_file('other-category-new-1.csv')
+    all_list = get_scps_from_file('other-category-new-1.csv')
     links = [s['link'] for s in not_found_list]
     get_detail_by_link_list(links, final_total_link_list, all_list)
-    write_to_csv(all_list, "scp-category-new-1.csv")
+    write_to_csv(all_list, "other-category-new-1.csv")
 
 
 def split_csv_file():
-    all_scp = get_scps_from_file('scp.csv')
+    all_scp = get_scps_from_file('other.csv')
     # 4000一组
     for i in range(0, 2):
         if i*6000+6000 > len(all_scp):
             scp_group = all_scp[i*6000:]
         else:
             scp_group = all_scp[i*6000: i*6000+6000]
-        write_to_csv(scp_group, "scp-split-" + str(i) + '.csv')
+        write_to_csv(scp_group, "other-split-" + str(i) + '.csv')
 
 # 从数据库里拿tag更新上去
 def update_tag_by_db(filename):
-    con = sqlite3.connect("E:/scp.db")
+    con = sqlite3.connect("E:/other.db")
     cur = con.cursor()
     tag_article_list = get_scps_from_file(filename)
     print(len(tag_article_list))
@@ -170,7 +170,7 @@ def update_tag_by_db(filename):
     # write_sub_cate_to_csv(tag_article_list, filename)
 
 def write_to_db(filename):
-    con = sqlite3.connect("E:/scp.db")
+    con = sqlite3.connect("E:/other.db")
     cur = con.cursor()
     scp_list = get_scps_from_file(filename)
     print(len(scp_list))
@@ -189,7 +189,7 @@ def write_to_db(filename):
     # write_sub_cate_to_csv(scp_list,'scp/scp_sub_cate.csv')
 # 把not_found的值改为int保存
 def fix_column():
-    con = sqlite3.connect("E:/scp.db")
+    con = sqlite3.connect("E:/other.db")
     cur = con.cursor()
     cur.execute('''UPDATE scps SET not_found = 0 WHERE not_found = 'false';''')
     cur.execute('''UPDATE scps SET not_found = 1 WHERE not_found = 'true';''')

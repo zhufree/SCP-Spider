@@ -11,7 +11,7 @@ spider_header = {
 def get_latest_article():
     article_list = []
     # doc = pq('http://scp-wiki-cn.wikidot.com/most-recently-created-cn/p/1')
-    doc = pq('http://scp-wiki-cn.wikidot.com/most-recently-created-translated/p/1')
+    doc = pq('http://other-wiki-cn.wikidot.com/most-recently-created-translated/p/1')
     for i in list(doc('table>tr').items())[2:]:
         new_article = {}
         info_list = list(i('td').items())

@@ -5,7 +5,7 @@ import os
 csv.field_size_limit(100000000)
 
 
-def merge_files(file_name_list, file_prefix='scp'):
+def merge_files(file_name_list, file_prefix='other'):
     """
     merge several csv files
     :param file_name_list:
@@ -21,7 +21,7 @@ def merge_files(file_name_list, file_prefix='scp'):
         f.write(append_str)
 
 
-def merge_all_file(dir_name, file_prefix='scp'):
+def merge_all_file(dir_name, file_prefix='other'):
     """
     merge all files in a dir
     :return:
@@ -33,7 +33,7 @@ def merge_all_file(dir_name, file_prefix='scp'):
 
 def get_scp_from_file(filename):
     """
-    read scp list from csv file
+    read other list from csv file
     :param filename:
     :return:
     """
@@ -46,7 +46,7 @@ def get_scp_from_file(filename):
 
 def write_to_csv(article_list, file_name):
     """
-    write a scp dict list to csv file, deprecated now because of db export csv
+    write a other dict list to csv file, deprecated now because of db export csv
     :param article_list:
     :param file_name:
     :return:
@@ -62,7 +62,7 @@ def write_to_csv(article_list, file_name):
 
 def write_sub_cate_to_csv(sub_cate_list, filename):
     """
-    write a scp list item (like settings) dict list to csv file, deprecated now because of db export csv
+    write a other list item (like settings) dict list to csv file, deprecated now because of db export csv
     :param sub_cate_list:
     :param filename:
     :return:
@@ -80,19 +80,19 @@ def split_csv_file():
     split a big csv file to several file for upload to bmob
     :return:
     """
-    all_scp = get_scp_from_file('scp.csv')
+    all_scp = get_scp_from_file('other.csv')
     # 4000一组
     for i in range(0, 2):
         if i * 6000 + 6000 > len(all_scp):
             scp_group = all_scp[i * 6000:]
         else:
             scp_group = all_scp[i * 6000: i * 6000 + 6000]
-        write_to_csv(scp_group, "scp-split-" + str(i) + '.csv')
+        write_to_csv(scp_group, "other-split-" + str(i) + '.csv')
 
 
 def update_tag_by_db(filename, db_filename):
     """
-    update scp tags from tags table in db
+    update other tags from tags table in db
     :param filename:
     :param db_filename:
     :return:
@@ -114,7 +114,7 @@ def update_tag_by_db(filename, db_filename):
 
 def write_to_db(filename, db_filename):
     """
-    write scp list from csv to db, deprecated now.
+    write other list from csv to db, deprecated now.
     :param filename:
     :return:
     """

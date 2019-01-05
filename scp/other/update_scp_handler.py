@@ -8,7 +8,7 @@ csv.field_size_limit(100000000)
 # SCP系列+Cn
 # 以1000为范围更新，4000+和cn1000系列更新频繁一些
 def update_scp_series():
-    old_scp_list = get_scps_from_file('scp-split-0.csv')
+    old_scp_list = get_scps_from_file('other-split-0.csv')
     for old_scp in old_scp_list[3000:]:
         detail = get_single_detail(old_scp['link'])
         old_scp['detail'] = detail
@@ -18,7 +18,7 @@ def update_scp_series():
             old_scp['not_found'] = 0
         print(old_scp['link'] + "not found = " + str(old_scp['not_found']))
 
-    write_to_csv(old_scp_list, 'scp-split-0.csv')
+    write_to_csv(old_scp_list, 'other-split-0.csv')
 
 
 # 故事外围 tales
@@ -48,7 +48,7 @@ def update_tales():
     #             old_tale['month'] = tale['month']
     #     if already_in == False:
     #         print(tale['link'])
-    old_scp_list = get_scps_from_file('scp/scp-tales.csv')
+    old_scp_list = get_scps_from_file('other/other-tales.csv')
     for old_scp in old_scp_list[:1000]:
         detail = get_single_detail(old_scp['link'])
         old_scp['detail'] = detail
@@ -56,17 +56,17 @@ def update_tales():
             old_scp['not_found'] = 'true'
         else:
             old_scp['not_found'] = 'false'
-    write_to_csv(old_tales_scp, 'scp/scp_tales.csv')
+    write_to_csv(old_tales_scp, 'other/scp_tales.csv')
 
 
 # 搞笑作品
 def update_jokes():
-    old_scp_list = get_scps_from_file('scp/scp-joke.csv')
+    old_scp_list = get_scps_from_file('other/other-joke.csv')
     for old_scp in old_scp_list:
-        if old_scp['link'].startswith('http://scp-wiki-cn.wikidot.com'):
+        if old_scp['link'].startswith('http://other-wiki-cn.wikidot.com'):
             print(old_scp['link'])
 
-            old_scp['link'] = old_scp['link'].replace('http://scp-wiki-cn.wikidot.com','')
+            old_scp['link'] = old_scp['link'].replace('http://other-wiki-cn.wikidot.com','')
         # detail = get_single_detail(old_scp['link'])
         # old_scp['detail'] = detail
         # if detail =="<h3>抱歉，该页面尚无内容</h3>":
@@ -74,7 +74,7 @@ def update_jokes():
         # else:
         #     old_scp['not_found'] = 'false'
 
-    write_to_csv(old_scp_list, 'scp/scp_joke.csv')
+    write_to_csv(old_scp_list, 'other/scp_joke.csv')
 
 # 设定和故事系列
 def update_settings_and_story_series():
@@ -91,8 +91,8 @@ def update_settings_and_story_series():
     total_scp_list = total_scp_list + thread_get_setting('false')
     total_scp_list = total_scp_list + thread_get_setting('true')
     print(len(total_scp_list))
-    write_sub_cate_to_csv(total_scp_list, "scp/scp_sub_cate.csv")
-    cate_scp_list = get_scps_from_file('scp/scp_sub_cate.csv')
+    write_sub_cate_to_csv(total_scp_list, "other/scp_sub_cate.csv")
+    cate_scp_list = get_scps_from_file('other/scp_sub_cate.csv')
     for old_scp in cate_scp_list:
         print(old_scp['link'])
         detail = get_single_detail(old_scp['link'])
@@ -101,13 +101,13 @@ def update_settings_and_story_series():
             old_scp['not_found'] = 'true'
         else:
             old_scp['not_found'] = 'false'
-    write_sub_cate_to_csv(cate_scp_list, 'scp/scp-sub-cate.csv')
+    write_sub_cate_to_csv(cate_scp_list, 'other/other-sub-cate.csv')
 
 # 单页面
 abnormal_link_list = ['/log-of-anomalous-items-cn','/log-of-anomalous-items', '/log-of-extranormal-events',
 '/log-of-extranormal-events-cn']
 single_page_list = ['/object-classes','/secure-facilities-locations','/secure-facilities-locations-cn',
-'/security-clearance-levels','/task-forces','/faq','/guide-for-newbies','/how-to-write-an-scp']
+'/security-clearance-levels','/task-forces','/faq','/guide-for-newbies','/how-to-write-an-other']
 short_story_link = '/short-stories'
 
 def update_single_pages():
@@ -144,14 +144,14 @@ def update_single_pages():
         }
     single_scp_list.append(short_scp)
     print(len(single_scp_list))
-    write_to_csv(single_scp_list, 'scp/single_scp.csv')
+    write_to_csv(single_scp_list, 'other/single_scp.csv')
 
 # 事故记录作为内页
 def update_events():
-    scp_list = get_scps_from_file('scp/scp_event.csv')
+    scp_list = get_scps_from_file('other/scp_event.csv')
     for scp in scp_list:
         scp['download_type'] = 3
-    write_to_csv(scp_list, 'scp/scp_event.csv')
+    write_to_csv(scp_list, 'other/scp_event.csv')
 
 def update_download_type(filename):
     # files = ['scp/' + name for name in os.listdir('scp/')]
