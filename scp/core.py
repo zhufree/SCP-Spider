@@ -24,6 +24,7 @@ class ScpSpider:
     def crawl_main_list(self):
         # use scrapy crawl scp list and save in db
         os.system('cd scp/scrapy_spider && scrapy crawl main_list_spider')
-        pass
 
+    def crawl_main_detail(self):
+        os.system('cd scp/scrapy_spider && scrapy crawl detail_spider')
 # ScpSpider().crawl_main_list()

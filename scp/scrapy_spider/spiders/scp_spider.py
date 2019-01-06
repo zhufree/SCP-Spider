@@ -1,7 +1,40 @@
 from pyquery import PyQuery as pq
-from .constants import DATA_TYPE, HEADERS
+from .constants import DATA_TYPE, HEADERS, SERIES_ENDPOINTS, SERIES_CN_ENDPOINTS, ENDPOINTS, REVERSE_ENDPOINTS, \
+    SINGLE_PAGE_ENDPOINT, DB_NAME, URL_PARAMS
 from ..items import *
-from .base import parse_html
+from .parse import parse_html
+import sqlite3
+
+
+def get_type_by_url(url):
+    if url in SERIES_ENDPOINTS:
+        return DATA_TYPE['scp-series']
+    elif url in SERIES_CN_ENDPOINTS:
+        return DATA_TYPE['scp-series-cn']
+    elif url in SINGLE_PAGE_ENDPOINT:
+        return DATA_TYPE['single-page']
+    elif url in ENDPOINTS.values():
+        return REVERSE_ENDPOINTS[url]
+    else:
+        return -1
+
+
+def get_empty_link_for_detail():
+    con = sqlite3.connect(DB_NAME)
+    cur = con.cursor()
+    cur.execute('select link from scps where detail is NULL;')
+    link_list = [t[0] for t in cur]
+    con.close()
+    return link_list
+
+
+def get_404_link_for_detail():
+    con = sqlite3.connect(DB_NAME)
+    cur = con.cursor()
+    cur.execute('select link from scps where not_found = 1;')
+    link_list = [t[0] for t in cur]
+    con.close()
+    return link_list
 
 
 class ScpListSpider(scrapy.Spider):  # 需要继承scrapy.Spider类
@@ -9,43 +42,49 @@ class ScpListSpider(scrapy.Spider):  # 需要继承scrapy.Spider类
     name = "main_list_spider"  # 定义蜘蛛名
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
-    start_urls = [
-        # scp系列1-5
-        # 'http://scp-wiki-cn.wikidot.com/scp-series',
-        # 'http://scp-wiki-cn.wikidot.com/scp-series-2',
-        # 'http://scp-wiki-cn.wikidot.com/scp-series-3',
-        # 'http://scp-wiki-cn.wikidot.com/scp-series-4',
-        # 'http://scp-wiki-cn.wikidot.com/scp-series-5',
-        # scp cn 系列
-        'http://scp-wiki-cn.wikidot.com/scp-series-cn',
-        'http://scp-wiki-cn.wikidot.com/scp-series-cn-2',
-        # tag
-        # 'http://scp-wiki-cn.wikidot.com/system:page-tags/',
-    ]
+    start_urls = \
+        list(ENDPOINTS.values())
+
+    # SERIES_ENDPOINTS + \
+    # SERIES_CN_ENDPOINTS + \
 
     def parse(self, response):
         pq_doc = pq(response.body)
-        base_info_list = parse_html(pq_doc, DATA_TYPE['scp-series-cn'])
+        base_info_list = parse_html(pq_doc, get_type_by_url(response.url))
         for info in base_info_list:
             new_scp = ScpBaseItem(info)
             yield new_scp
-            # detail_request = scrapy.Request(response.urljoin(new_scp.link), callback=self.parse_detail,
-            # headers=HEADERS)
-            # detail_request.meta['item'] = new_scp
-            # yield detail_request
 
 
-def parse_detail(response):
-    item = response.meta['item']
-    if response.status != 404:
-        detail_dom = response.css('div#page-content')[0]
-        item['detail'] = detail_dom.extract().replace('  ', '').replace('\n', '')
-        item['not_found'] = 'false'
-    else:
-        item['detail'] = "<h3>抱歉，该页面尚无内容</h3>"
-        item['not_found'] = 'true'
+class ScpSinglePageSpider(scrapy.Spider):
+    """
+    抓取单页面
+    """
+    name = "single_page_spider"
+    allowed_domains = 'scp-wiki-cn.wikidot.com'
+    start_urls = SINGLE_PAGE_ENDPOINT
 
-    yield item
+    def parse(self, response):
+        pq_doc = pq(response.body)
+        new_scp = ScpBaseItem(link=response.url[30:], title=pq_doc('div#page-title').text(),
+                              scp_type=DATA_TYPE['single-page'])
+        yield new_scp
+
+
+class ScpDetailSpider(scrapy.Spider):
+    name = 'detail_spider'
+    allowed_domains = 'scp-wiki-cn.wikidot.com'
+    start_urls = [('{_s_}://{_d_}' + link).format(**URL_PARAMS) for link in get_empty_link_for_detail()]
+    handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
+
+    def parse(self, response):
+        if response.status != 404:
+            detail_dom = response.css('div#page-content')[0]
+            detail_item = ScpDetailItem(link=response.url[30:],
+                                        detail=detail_dom.extract().replace('  ', '').replace('\n', ''), not_found=0)
+        else:
+            detail_item = ScpDetailItem(link=response.url[30:], detail="<h3>抱歉，该页面尚无内容</h3>", not_found=1)
+        yield detail_item
 
 
 class ScpTagSpider(scrapy.Spider):  # 需要继承scrapy.Spider类

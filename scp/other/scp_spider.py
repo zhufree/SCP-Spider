@@ -17,66 +17,6 @@ new_found_category_list = []  # 从正文抓到的所有新文章
 
 # 抓取所有目录信息之后，把所有链接保存到列表，然后遍历链接抓正文，对于正文中的链接，如果再列表里就不抓，否则就再抓一篇
 # 抓取正文内容方法，顺便如果正文中有别的链接也抓下来
-def get_detail(new_article, article_list):
-    try:
-        if 'http://other-wiki-cn.wikidot.com' in new_article['link']:
-            new_article['link'] = new_article['link'][30:]
-        detail_doc = pq('http://other-wiki-cn.wikidot.com' + new_article['link'])
-        new_article['not_found'] = "false"
-        detail_dom = list(detail_doc('div#page-content').items())[0]
-        new_article['detail'] = detail_dom.html().replace('  ', '').replace('\n', '')
-        a_in_detail = detail_dom.remove('.footer-wikiwalk-nav')('a')
-        for a in a_in_detail.items():
-            href = a.attr('href')
-            if "/" in href:
-                print(href)
-    except:
-        new_article['detail'] = "<h3>抱歉，该页面尚无内容</h3>"
-        new_article['not_found'] = "true"
-
-
-# scp系列
-def thread_get_series(i):
-    article_list = []
-    if (i == 1):
-        doc = pq('http://other-wiki-cn.wikidot.com/other-series', headers=spider_header)
-    else:
-        doc = pq('http://other-wiki-cn.wikidot.com/other-series-' + str(i), headers=spider_header)
-    for ul in list(doc('div#page-content ul').items())[1:-3]:
-        for li in ul('li').items():
-            link = li('a').attr('href')
-            new_article = {
-                'title': li.text(),
-                'link': link,
-                'cn': 'false',
-                'type': 'series'
-            }
-            # link_list.append(link)
-            print(link)
-            article_list.append(new_article)
-
-    return article_list
-    # write_to_csv(article_list, 'scps/series-' + str(i) + '.csv')
-
-
-# scpCn系列，抓一次，无多线程
-def get_series_cn():
-    article_list = []
-    doc = pq('http://other-wiki-cn.wikidot.com/other-series-cn-2', headers=spider_header)
-    for ul in list(doc('div#page-content ul').items())[1:-1]:
-        for li in ul('li').items():
-            link = li('a').attr('href')
-            new_article = {
-                'title': li.text(),
-                'link': link,
-                'cn': 'true',
-                'scp_type': 'series'
-            }
-            # link_list.append(link)
-            print(link)
-            article_list.append(new_article)
-    return article_list
-    # write_to_csv(article_list, 'scps/series-cn.csv')
 
 
 # 归档信息

@@ -14,16 +14,17 @@ def write_to_db(cur, scp_item):
     :return:
     """
     try:
-        if DATA_TYPE['scp-series'] <= scp_item['scp_type'] <= DATA_TYPE['scp-series-cn']:
+        if type(scp_item) == ScpBaseItem:
             cur.execute('''insert into scps (title, link, scp_type) values (?,?,?)''',
                         (scp_item['title'], scp_item['link'], scp_item['scp_type'],))
-            print("insert %s" % scp_item['title'])
-
-        elif scp_item is ScpTaleItem:
+        elif type(scp_item) == ScpTaleItem:
+            cur.execute(
+                '''insert into scps (title, link, scp_type, author, created_time, month, page_code) values (?,?,?)''',
+                (scp_item['title'], scp_item['link'], scp_item['scp_type'], scp_item['author'],
+                 scp_item['created_time'], scp_item['month'], scp_item['page_code'],))
+        elif type(scp_item) == ScpStorySeriesItem:
             pass
-        elif scp_item is ScpStorySeriesItem:
-            pass
-        elif scp_item is ScpSettingItem:
+        elif type(scp_item) == ScpSettingItem:
             cur.execute('''insert into scps values (NULL, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
                         (scp_item['title'], scp_item['link'], scp_item['detail'], scp_item['download_type'],
                          scp_item['scp_type'],
@@ -33,13 +34,18 @@ def write_to_db(cur, scp_item):
                          scp_item['contest_name'], scp_item['contest_link'], scp_item['created_time'],
                          scp_item['month'],
                          scp_item['event_type'], scp_item['page_code'], scp_item['tags'],))
-        elif scp_item is ScpContestItem:
+        elif type(scp_item) == ScpContestItem:
             pass
-        elif scp_item is ScpEventItem:
+        elif type(scp_item) == ScpEventItem:
             pass
 
     except Exception as e:
         print(e)
+
+
+def update_detail_in_db(cur, detail_item):
+    cur.execute('''UPDATE scps SET detail = ?, not_found = ? WHERE LINK = ?''',
+                (detail_item['detail'], detail_item['not_found'], detail_item['link']))
 
 
 class ScpSpiderPipeline(object):
@@ -53,7 +59,10 @@ class ScpSpiderPipeline(object):
         self.con.close()
 
     def process_item(self, item, spider):
-        write_to_db(self.cur, item)
+        if type(item) == ScpDetailItem:
+            update_detail_in_db(self.cur, item)
+        else:
+            write_to_db(self.cur, item)
         return item
 
     def parse_detail(self, response):

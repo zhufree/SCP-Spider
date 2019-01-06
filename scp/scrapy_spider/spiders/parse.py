@@ -4,6 +4,12 @@
 from .constants import DATA_TYPE, TALE_LETTER_LIST
 
 
+def get_tale_year_by_time(time):
+    year = time.split(' ')[2]
+    month = time.split(' ')[1]
+    return year+month
+
+
 def parse_html(pq_doc, scp_type):
     if scp_type <= DATA_TYPE['scp-series-cn']:
         return parse_series_html(pq_doc, scp_type)
@@ -32,21 +38,21 @@ def parse_series_html(pq_doc, scp_type):
 
 
 def parse_tale_html(pq_doc, scp_type):
-    base_info_list = []
+    tale_list = []
     for i in range(0, 27):
         for section_tr in list(list(pq_doc('div#page-content .section').items())[i]('div.list-pages-box tr').items()):
             tds = list(section_tr('td').items())
-            new_article = {
+            new_tale = {
                 'title': tds[0].text(),
                 'link': tds[0]('a').attr('href'),
                 'author': tds[1].text(),
                 'created_time': tds[2].text(),
+                'month': get_tale_year_by_time(tds[2].text()),
                 'page_code': TALE_LETTER_LIST[i],
                 'scp_type': scp_type
             }
-
-            base_info_list.append(new_article)
-    return base_info_list
+            tale_list.append(new_tale)
+    return tale_list
 
 
 def parse_archives_html(pq_doc, scp_type):
@@ -154,3 +160,18 @@ def parse_contest_cn_html(pq_doc):
             print(new_article['link'])
             contest_list.append(new_article)
     return contest_list
+
+
+def parse_story_series_html(pq_doc, scp_type):
+    story_series_list = []
+    for tr in list(pq_doc('div.list-pages-box tr').items())[1:]:
+        tds = list(tr('td').items())
+        new_article = {
+            'title': tds[0].text(),
+            'link': tds[0]('a').attr('href'),
+            'author': tds[1].text(),
+            'snippet': tds[2].text(),
+            'scp_type': scp_type
+        }
+        story_series_list.append(new_article)
+    return story_series_list

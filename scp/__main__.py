@@ -9,4 +9,5 @@ from .core import ScpSpider
 #
 # if __name__ == '__main__':
 c = ScpSpider()
-c.crawl_main_list()
+# c.crawl_main_list()
+c.crawl_main_detail()

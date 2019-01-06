@@ -58,3 +58,9 @@ class ScpTagItem(scrapy.Item):
     link = scrapy.Field()
     title = scrapy.Field()
     tags = scrapy.Field()
+
+
+class ScpDetailItem(scrapy.Item):
+    link = scrapy.Field()
+    detail = scrapy.Field()
+    not_found = scrapy.Field()
