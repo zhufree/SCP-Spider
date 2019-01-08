@@ -1,6 +1,6 @@
 from pyquery import PyQuery as pq
 from .constants import DATA_TYPE, HEADERS, SERIES_ENDPOINTS, SERIES_CN_ENDPOINTS, ENDPOINTS, REVERSE_ENDPOINTS, \
-    SINGLE_PAGE_ENDPOINT, DB_NAME, URL_PARAMS
+    SINGLE_PAGE_ENDPOINTS, SERIES_STORY_ENDPOINTS, REPORT_ENDPOINTS, DB_NAME, URL_PARAMS
 from ..items import *
 from .parse import parse_html
 import sqlite3
@@ -11,8 +11,12 @@ def get_type_by_url(url):
         return DATA_TYPE['scp-series']
     elif url in SERIES_CN_ENDPOINTS:
         return DATA_TYPE['scp-series-cn']
-    elif url in SINGLE_PAGE_ENDPOINT:
+    elif url in SINGLE_PAGE_ENDPOINTS:
         return DATA_TYPE['single-page']
+    elif url in SERIES_STORY_ENDPOINTS:
+        return DATA_TYPE['series-archive']
+    elif url in REPORT_ENDPOINTS:
+        return DATA_TYPE['reports-interviews-and-logs']
     elif url in ENDPOINTS.values():
         return DATA_TYPE[REVERSE_ENDPOINTS[url]]
     else:
@@ -42,18 +46,18 @@ class ScpListSpider(scrapy.Spider):  # 需要继承scrapy.Spider类
     name = "main_list_spider"  # 定义蜘蛛名
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
-    start_urls = \
-        list(ENDPOINTS.values())
+    start_urls = REPORT_ENDPOINTS
+        # list(ENDPOINTS.values())\
 
+        # + SERIES_STORY_END_POINTS
     # SERIES_ENDPOINTS + \
     # SERIES_CN_ENDPOINTS + \
 
     def parse(self, response):
         pq_doc = pq(response.body)
-        base_info_list = parse_html(pq_doc, get_type_by_url(response.url))
-        for info in base_info_list:
-            new_scp = ScpBaseItem(info)
-            yield new_scp
+        item_list = parse_html(pq_doc, get_type_by_url(response.url))
+        for info in item_list:
+            yield info
 
 
 class ScpSinglePageSpider(scrapy.Spider):
@@ -62,7 +66,7 @@ class ScpSinglePageSpider(scrapy.Spider):
     """
     name = "single_page_spider"
     allowed_domains = 'scp-wiki-cn.wikidot.com'
-    start_urls = SINGLE_PAGE_ENDPOINT
+    start_urls = SINGLE_PAGE_ENDPOINTS
 
     def parse(self, response):
         pq_doc = pq(response.body)

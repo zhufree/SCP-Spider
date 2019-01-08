@@ -1,12 +1,12 @@
 HEADERS = {
     'Origin': 'http://scp-wiki-cn.wikidot.com/',
     'Referer': 'http://scp-wiki-cn.wikidot.com/',
-    'User-Agent': 'voltron',
+    'User-Agent': 'freescp',
     'Accept-Encoding': 'gzip, deflate, br',
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
 }
 
-DB_NAME = 'D:\\Code\\others\\SCP-Spider\\scp\\scp.db'
+DB_NAME = 'E:\\SCP-Spider\\scp\\scp.db'
 
 CREATE_DB_SQL = '''
 CREATE TABLE [scps](
@@ -22,6 +22,8 @@ CREATE TABLE [scps](
   [month] TEXT, 
   [event_type] TEXT, 
   [page_code] TEXT, 
+  [contest_name] TEXT, 
+  [contest_link] TEXT,
   [tags] TEXT);
 '''
 
@@ -35,11 +37,10 @@ CREATE TABLE [scp_collection](
   [download_type] TEXT, 
   [scp_type] TEXT, 
   [not_found] INTEGER, 
+  [author] TEXT,
   [desc] TEXT, 
   [snippet] TEXT, 
   [subtext] TEXT, 
-  [contest_name] TEXT, 
-  [contest_link] TEXT,
   [links] TEXT
 );
 
@@ -62,10 +63,13 @@ URL_PARAMS = {
 DATA_TYPE = {
     # list
     'single-page': 0,
+
     'scp-series': 1,
     'scp-series-cn': 2,
+
     'tales-by-page-name': 3,
     'tales-cn-by-page-name': 4,
+
     'joke-scps': 5,
     'joke-scps-cn': 6,
     'archived-scps': 7,
@@ -74,13 +78,13 @@ DATA_TYPE = {
     'decommissioned-scps': 10,
     'scp-removed': 11,
     'reports-interviews-and-logs': 12,
+
     'canon-hub': 13,
     'canon-hub-cn': 14,
     'contest-archive': 15,
     'contest-archive-cn': 16,
     'series-archive': 17,
     'series-archive-cn': 18
-
 }
 
 TALE_LETTER_LIST = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
@@ -98,7 +102,14 @@ SERIES_CN_ENDPOINTS = [
     '{_s_}://{_d_}/scp-series-cn-2'.format(**URL_PARAMS),
 ]
 
-SINGLE_PAGE_ENDPOINT = [
+SERIES_STORY_ENDPOINTS = [
+    '{_s_}://{_d_}/series-archive'.format(**URL_PARAMS),
+    '{_s_}://{_d_}/series-archive/p/1'.format(**URL_PARAMS),
+    '{_s_}://{_d_}/series-archive/p/2'.format(**URL_PARAMS),
+    '{_s_}://{_d_}/series-archive/p/3'.format(**URL_PARAMS),
+]
+
+SINGLE_PAGE_ENDPOINTS = [
     '{_s_}://{_d_}/secure-facilities-locations'.format(**URL_PARAMS),
     '{_s_}://{_d_}/secure-facilities-locations-cn'.format(**URL_PARAMS),
     '{_s_}://{_d_}/object-classes'.format(**URL_PARAMS),
@@ -114,6 +125,19 @@ SINGLE_PAGE_ENDPOINT = [
     '{_s_}://{_d_}/how-to-write-an-scp'.format(**URL_PARAMS),
 ]
 
+REPORT_ENDPOINTS = [
+    '{_s_}://{_d_}/incident-reports-eye-witness-interviews-and-personal-logs/p/1'.format(
+        **URL_PARAMS),
+    '{_s_}://{_d_}/incident-reports-eye-witness-interviews-and-personal-logs/p/2'.format(
+        **URL_PARAMS),
+    '{_s_}://{_d_}/incident-reports-eye-witness-interviews-and-personal-logs/p/3'.format(
+        **URL_PARAMS),
+    '{_s_}://{_d_}/incident-reports-eye-witness-interviews-and-personal-logs/p/4'.format(
+        **URL_PARAMS),
+    '{_s_}://{_d_}/incident-reports-eye-witness-interviews-and-personal-logs/p/5'.format(
+        **URL_PARAMS)
+]
+
 ENDPOINTS = {
     # list
     'tales-by-page-name': '{_s_}://{_d_}/tales-by-page-name'.format(**URL_PARAMS),
@@ -123,12 +147,11 @@ ENDPOINTS = {
     'archived-scps': '{_s_}://{_d_}/archived-scps'.format(**URL_PARAMS),
     'scp-ex': '{_s_}://{_d_}/scp-ex'.format(**URL_PARAMS),
     'scp-ex-cn': '{_s_}://{_d_}/scp-ex-cn'.format(**URL_PARAMS),
-    'decommissioned-scps-arc': '{_s_}://{_d_}/decommissioned-scps-arc'.format(**URL_PARAMS),
+    'decommissioned-scps': '{_s_}://{_d_}/decommissioned-scps-arc'.format(**URL_PARAMS),
     'scp-removed': '{_s_}://{_d_}/scp-removed'.format(**URL_PARAMS),
-    'reports-interviews-and-logs': '{_s_}://{_d_}/incident-reports-eye-witness-interviews-and-personal-logs'.format(
-        **URL_PARAMS),
-    'series-archive': '{_s_}://{_d_}/series-archive/p/'.format(**URL_PARAMS),
     'series-archive-cn': '{_s_}://{_d_}/series-archive-cn'.format(**URL_PARAMS),
+
+    # TODO 竞赛改成抓竞赛主页
 }
 
 REVERSE_ENDPOINTS = dict(zip(ENDPOINTS.values(), ENDPOINTS.keys()))

@@ -31,24 +31,30 @@ class ScpTaleItem(ScpBaseItem):
     page_code = scrapy.Field()
 
 
-class ScpContestItem(ScpBaseItem):
-    author = scrapy.Field()
-    month = scrapy.Field()
-    page_code = scrapy.Field()
-    contest_name = scrapy.Field()
-    contest_link = scrapy.Field()
+# FIXME 竞赛胜出文章
+class ScpContestWinnerItem(ScpBaseItem):
+    pass
+#     author = scrapy.Field()
+#     contest_name = scrapy.Field()
+#     contest_link = scrapy.Field()
+#
+#
+# class ScpContestItem(ScpBaseItem):
+#     creator = scrapy.Field()
 
 
 class ScpEventItem(ScpBaseItem):
     event_type = scrapy.Field()
 
 
+# collection
 class ScpSettingItem(ScpBaseItem):
     desc = scrapy.Field()
     snippet = scrapy.Field()
     subtext = scrapy.Field()
 
 
+# collection
 class ScpStorySeriesItem(ScpBaseItem):
     author = scrapy.Field()
     snippet = scrapy.Field()

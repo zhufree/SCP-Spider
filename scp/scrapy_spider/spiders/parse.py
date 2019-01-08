@@ -18,6 +18,8 @@ def parse_html(pq_doc, scp_type):
         return parse_tale_html(pq_doc, scp_type)
     elif DATA_TYPE['tales-cn-by-page-name'] < scp_type <= DATA_TYPE['scp-removed']:
         return parse_archives_html(pq_doc, scp_type)
+    elif scp_type == DATA_TYPE['reports-interviews-and-logs']:
+        return parse_report_html(pq_doc)
 
 
 # scp系列
@@ -66,9 +68,31 @@ def parse_archives_html(pq_doc, scp_type):
             'link': link,
             'scp_type': scp_type
         }
-        print(link)
         base_info_list.append(ScpBaseItem(new_article))
     return base_info_list
+
+
+def parse_report_html(pq_doc):
+    item_list = []
+    for i in range(0, 5):
+        for li in pq_doc('#wiki-tab-0-' + str(i) + ' .list-pages-box>ul>li').items():
+            new_article = {
+                'link': li('a').attr('href'),
+                'title': li('a').text(),
+                'scp_type': DATA_TYPE['reports-interviews-and-logs']
+            }
+            if i == 0:
+                new_article['event_type'] = 'lab_record'
+            elif i == 1:
+                new_article['event_type'] = 'discovery_report'
+            elif i == 2:
+                new_article['event_type'] = 'event_report'
+            elif i == 3:
+                new_article['event_type'] = 'interview'
+            elif i == 4:
+                new_article['event_type'] = 'addon'
+            item_list.append(ScpEventItem(new_article))
+    return item_list
 
 
 # 这版本暂时不用
@@ -84,12 +108,11 @@ def parse_setting_html(pq_doc, scp_type):
             'scp_type': scp_type
         }
         # link_list.append(new_article['link'])
-        print(new_article['link'])
         setting_list.append(ScpSettingItem(new_article))
     return setting_list
 
 
-def parse_content_html(pq_doc):
+def parse_contest_html(pq_doc):
     contest_list = []
     last_contest_name = ""
     last_contest_link = ""
@@ -123,9 +146,9 @@ def parse_content_html(pq_doc):
             new_plus_article['scp_type'] = DATA_TYPE['contest-archive']
 
             if new_article['link'] is not None:
-                contest_list.append(ScpContestItem(new_article))
+                contest_list.append(ScpContestWinnerItem(new_article))
             if new_plus_article['link'] is not None:
-                contest_list.append(ScpContestItem(new_plus_article))
+                contest_list.append(ScpContestWinnerItem(new_plus_article))
         else:
             new_article['title'] = tds[2].text()
             new_article['link'] = tds[2]('a').attr('href')
@@ -135,7 +158,7 @@ def parse_content_html(pq_doc):
             new_article['scp_type'] = DATA_TYPE['contest-archive']
 
             if new_article['link'] is not None:
-                contest_list.append(ScpContestItem(new_article))
+                contest_list.append(ScpContestWinnerItem(new_article))
     return contest_list
 
 
@@ -156,8 +179,7 @@ def parse_contest_cn_html(pq_doc):
                 'scp_type': DATA_TYPE['contest-archive-cn']
             }
             
-            print(new_article['link'])
-            contest_list.append(ScpContestItem(new_article))
+            contest_list.append(ScpContestWinnerItem(new_article))
     return contest_list
 
 

@@ -1,4 +1,4 @@
-DB_NAME = 'D:\\Code\\others\\SCP-Spider\\scp\\scp.db'
+DB_NAME = 'E:\\SCP-Spider\\scp\\scp.db'
 
 CREATE_DB_SQL = '''
 CREATE TABLE [scps](
