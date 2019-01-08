@@ -14,7 +14,7 @@ def get_type_by_url(url):
     elif url in SINGLE_PAGE_ENDPOINT:
         return DATA_TYPE['single-page']
     elif url in ENDPOINTS.values():
-        return REVERSE_ENDPOINTS[url]
+        return DATA_TYPE[REVERSE_ENDPOINTS[url]]
     else:
         return -1
 

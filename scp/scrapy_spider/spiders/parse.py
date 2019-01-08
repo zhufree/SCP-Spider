@@ -2,6 +2,7 @@
 # 解析html获取需要的链接或正文
 
 from .constants import DATA_TYPE, TALE_LETTER_LIST
+from ..items import *
 
 
 def get_tale_year_by_time(time):
@@ -31,8 +32,7 @@ def parse_series_html(pq_doc, scp_type):
                 'link': link,
                 'scp_type': scp_type,
             }
-            print(link)
-            base_info_list.append(new_article)
+            base_info_list.append(ScpBaseItem(new_article))
 
     return base_info_list
 
@@ -51,7 +51,7 @@ def parse_tale_html(pq_doc, scp_type):
                 'page_code': TALE_LETTER_LIST[i],
                 'scp_type': scp_type
             }
-            tale_list.append(new_tale)
+            tale_list.append(ScpTaleItem(new_tale))
     return tale_list
 
 
@@ -67,7 +67,7 @@ def parse_archives_html(pq_doc, scp_type):
             'scp_type': scp_type
         }
         print(link)
-        base_info_list.append(new_article)
+        base_info_list.append(ScpBaseItem(new_article))
     return base_info_list
 
 
@@ -85,7 +85,7 @@ def parse_setting_html(pq_doc, scp_type):
         }
         # link_list.append(new_article['link'])
         print(new_article['link'])
-        setting_list.append(new_article)
+        setting_list.append(ScpSettingItem(new_article))
     return setting_list
 
 
@@ -123,9 +123,9 @@ def parse_content_html(pq_doc):
             new_plus_article['scp_type'] = DATA_TYPE['contest-archive']
 
             if new_article['link'] is not None:
-                contest_list.append(new_article)
+                contest_list.append(ScpContestItem(new_article))
             if new_plus_article['link'] is not None:
-                contest_list.append(new_plus_article)
+                contest_list.append(ScpContestItem(new_plus_article))
         else:
             new_article['title'] = tds[2].text()
             new_article['link'] = tds[2]('a').attr('href')
@@ -135,8 +135,7 @@ def parse_content_html(pq_doc):
             new_article['scp_type'] = DATA_TYPE['contest-archive']
 
             if new_article['link'] is not None:
-                print(new_article['link'])
-                contest_list.append(new_article)
+                contest_list.append(ScpContestItem(new_article))
     return contest_list
 
 
@@ -158,7 +157,7 @@ def parse_contest_cn_html(pq_doc):
             }
             
             print(new_article['link'])
-            contest_list.append(new_article)
+            contest_list.append(ScpContestItem(new_article))
     return contest_list
 
 
@@ -173,5 +172,5 @@ def parse_story_series_html(pq_doc, scp_type):
             'snippet': tds[2].text(),
             'scp_type': scp_type
         }
-        story_series_list.append(new_article)
+        story_series_list.append(ScpStorySeriesItem(new_article))
     return story_series_list

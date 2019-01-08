@@ -6,7 +6,7 @@ HEADERS = {
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
 }
 
-DB_NAME = 'E:\\SCP-Spider\\scp\\scp.db'
+DB_NAME = 'D:\\Code\\others\\SCP-Spider\\scp\\scp.db'
 
 CREATE_DB_SQL = '''
 CREATE TABLE [scps](
@@ -73,12 +73,13 @@ DATA_TYPE = {
     'scp-ex-cn': 9,
     'decommissioned-scps': 10,
     'scp-removed': 11,
-    'canon-hub': 12,
-    'canon-hub-cn': 13,
-    'contest-archive': 14,
-    'contest-archive-cn': 15,
-    'series-archive': 16,
-    'series-archive-cn': 17
+    'reports-interviews-and-logs': 12,
+    'canon-hub': 13,
+    'canon-hub-cn': 14,
+    'contest-archive': 15,
+    'contest-archive-cn': 16,
+    'series-archive': 17,
+    'series-archive-cn': 18
 
 }
 
@@ -126,8 +127,8 @@ ENDPOINTS = {
     'scp-removed': '{_s_}://{_d_}/scp-removed'.format(**URL_PARAMS),
     'reports-interviews-and-logs': '{_s_}://{_d_}/incident-reports-eye-witness-interviews-and-personal-logs'.format(
         **URL_PARAMS),
-    'series-archive': '{_s_}://{_d_}/series-archive-cn'.format(**URL_PARAMS),
-    'series-archive-cn': '{_s_}://{_d_}/series-archive/p/'.format(**URL_PARAMS),
+    'series-archive': '{_s_}://{_d_}/series-archive/p/'.format(**URL_PARAMS),
+    'series-archive-cn': '{_s_}://{_d_}/series-archive-cn'.format(**URL_PARAMS),
 }
 
 REVERSE_ENDPOINTS = dict(zip(ENDPOINTS.values(), ENDPOINTS.keys()))

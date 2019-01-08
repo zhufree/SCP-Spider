@@ -67,27 +67,7 @@ class ScpSpiderPipeline(object):
 
     def parse_detail(self, response):
         detail_dom = response.css('div#page-content')[0]
-        # for category in total_scps_list:
-        #     if category['link'] == link:
-        #         category['not_found'] = "false"
-        #         category['detail'] = detail_dom.html().replace('  ', '').replace('\n', '')
         print(detail_dom.css('::text')).extract()
-        # a_in_detail = detail_dom.remove('.footer-wikiwalk-nav')('a')
-        # if len(list(a_in_detail.items())) > 30:
-        #     return
-        # for a in a_in_detail.items():
-        #     href = a.attr('href')
-        #     if href.startswith('/') and href not in total_link_list:
-        #         print('new link = ' + href)
-        #         new_link.append(href)
-        #         new_found_link_list.append(href)
-        #         title = a.text()
-        #         new_category = {
-        #             'title': title,
-        #             'link': href,
-        #             'type': 'none'
-        #         }
-        #         new_found_category_list.append(new_category)
 
     def item_completed(self, results, item, info):
         return item
