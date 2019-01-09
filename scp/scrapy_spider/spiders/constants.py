@@ -14,8 +14,8 @@ CREATE TABLE [scps](
   [title] TEXT NOT NULL, 
   [link] TEXT NOT NULL, 
   [detail] TEXT, 
-  [download_type] TEXT, 
-  [scp_type] TEXT, 
+  [download_type] INTEGER, 
+  [scp_type] INTEGER, 
   [not_found] INTEGER, 
   [author] TEXT, 
   [created_time] TEXT, 
@@ -34,8 +34,8 @@ CREATE TABLE [scp_collection](
   [title] TEXT NOT NULL, 
   [link] TEXT NOT NULL, 
   [detail] TEXT, 
-  [download_type] TEXT, 
-  [scp_type] TEXT, 
+  [download_type] INTEGER, 
+  [scp_type] INTEGER, 
   [not_found] INTEGER, 
   [author] TEXT,
   [desc] TEXT, 
@@ -82,9 +82,11 @@ DATA_TYPE = {
     'canon-hub': 13,
     'canon-hub-cn': 14,
     'contest-archive': 15,
-    'contest-archive-cn': 16,
-    'series-archive': 17,
-    'series-archive-cn': 18
+    'contest-archive-winner': 16,
+    'contest-archive-cn': 17,
+    'contest-archive-cn-winner': 18,
+    'series-archive': 19,
+    'series-archive-cn': 20
 }
 
 TALE_LETTER_LIST = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
@@ -100,13 +102,6 @@ SERIES_ENDPOINTS = [
 SERIES_CN_ENDPOINTS = [
     '{_s_}://{_d_}/scp-series-cn'.format(**URL_PARAMS),
     '{_s_}://{_d_}/scp-series-cn-2'.format(**URL_PARAMS),
-]
-
-SERIES_STORY_ENDPOINTS = [
-    '{_s_}://{_d_}/series-archive'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/series-archive/p/1'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/series-archive/p/2'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/series-archive/p/3'.format(**URL_PARAMS),
 ]
 
 SINGLE_PAGE_ENDPOINTS = [
@@ -149,9 +144,25 @@ ENDPOINTS = {
     'scp-ex-cn': '{_s_}://{_d_}/scp-ex-cn'.format(**URL_PARAMS),
     'decommissioned-scps': '{_s_}://{_d_}/decommissioned-scps-arc'.format(**URL_PARAMS),
     'scp-removed': '{_s_}://{_d_}/scp-removed'.format(**URL_PARAMS),
-    'series-archive-cn': '{_s_}://{_d_}/series-archive-cn'.format(**URL_PARAMS),
 
     # TODO 竞赛改成抓竞赛主页
 }
 
 REVERSE_ENDPOINTS = dict(zip(ENDPOINTS.values(), ENDPOINTS.keys()))
+
+SERIES_STORY_ENDPOINTS = [
+    '{_s_}://{_d_}/series-archive'.format(**URL_PARAMS),
+    '{_s_}://{_d_}/series-archive/p/1'.format(**URL_PARAMS),
+    '{_s_}://{_d_}/series-archive/p/2'.format(**URL_PARAMS),
+    '{_s_}://{_d_}/series-archive/p/3'.format(**URL_PARAMS),
+]
+
+COLLECTION_ENDPOINTS = {
+    'canon-hub': '{_s_}://{_d_}/canon-hub'.format(**URL_PARAMS),
+    'canon-hub-cn': '{_s_}://{_d_}/canon-hub-cn'.format(**URL_PARAMS),
+    'contest-archive': '{_s_}://{_d_}/contest-archive'.format(**URL_PARAMS),
+    'contest-archive-cn': '{_s_}://{_d_}/contest-archive-cn'.format(**URL_PARAMS),
+    'series-archive-cn': '{_s_}://{_d_}/series-archive-cn'.format(**URL_PARAMS),
+}
+
+REVERSE_COLLECTION_ENDPOINTS = dict(zip(COLLECTION_ENDPOINTS.values(), COLLECTION_ENDPOINTS.keys()))

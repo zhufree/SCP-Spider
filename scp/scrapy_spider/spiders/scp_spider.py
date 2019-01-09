@@ -1,6 +1,7 @@
 from pyquery import PyQuery as pq
 from .constants import DATA_TYPE, HEADERS, SERIES_ENDPOINTS, SERIES_CN_ENDPOINTS, ENDPOINTS, REVERSE_ENDPOINTS, \
-    SINGLE_PAGE_ENDPOINTS, SERIES_STORY_ENDPOINTS, REPORT_ENDPOINTS, DB_NAME, URL_PARAMS
+    SINGLE_PAGE_ENDPOINTS, SERIES_STORY_ENDPOINTS, REPORT_ENDPOINTS, COLLECTION_ENDPOINTS, \
+    REVERSE_COLLECTION_ENDPOINTS, DB_NAME, URL_PARAMS
 from ..items import *
 from .parse import parse_html
 import sqlite3
@@ -19,6 +20,8 @@ def get_type_by_url(url):
         return DATA_TYPE['reports-interviews-and-logs']
     elif url in ENDPOINTS.values():
         return DATA_TYPE[REVERSE_ENDPOINTS[url]]
+    elif url in COLLECTION_ENDPOINTS.values():
+        return DATA_TYPE[REVERSE_COLLECTION_ENDPOINTS[url]]
     else:
         return -1
 
@@ -46,12 +49,10 @@ class ScpListSpider(scrapy.Spider):  # 需要继承scrapy.Spider类
     name = "main_list_spider"  # 定义蜘蛛名
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
-    start_urls = REPORT_ENDPOINTS
-        # list(ENDPOINTS.values())\
+    item_list_urls = SERIES_ENDPOINTS + SERIES_CN_ENDPOINTS + list(ENDPOINTS.values()) + REPORT_ENDPOINTS
+    collection_list_url = list(COLLECTION_ENDPOINTS.values()) + SERIES_STORY_ENDPOINTS
 
-        # + SERIES_STORY_END_POINTS
-    # SERIES_ENDPOINTS + \
-    # SERIES_CN_ENDPOINTS + \
+    start_urls = collection_list_url
 
     def parse(self, response):
         pq_doc = pq(response.body)

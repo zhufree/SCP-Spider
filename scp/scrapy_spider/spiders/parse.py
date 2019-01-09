@@ -20,6 +20,14 @@ def parse_html(pq_doc, scp_type):
         return parse_archives_html(pq_doc, scp_type)
     elif scp_type == DATA_TYPE['reports-interviews-and-logs']:
         return parse_report_html(pq_doc)
+    elif DATA_TYPE['reports-interviews-and-logs'] < scp_type <= DATA_TYPE['canon-hub-cn']:
+        return parse_setting_html(pq_doc, scp_type)
+    elif scp_type == DATA_TYPE['contest-archive']:
+        return parse_contest_html(pq_doc)
+    elif scp_type == DATA_TYPE['contest-archive-cn']:
+        return parse_contest_cn_html(pq_doc)
+    elif DATA_TYPE['contest-archive-cn-winner'] < scp_type <= DATA_TYPE['series-archive-cn']:
+        return parse_story_series_html(pq_doc, scp_type)
 
 
 # scp系列
@@ -95,7 +103,6 @@ def parse_report_html(pq_doc):
     return item_list
 
 
-# 这版本暂时不用
 def parse_setting_html(pq_doc, scp_type):
     setting_list = []
     for div in list(pq_doc('div.centered').items()):
@@ -107,7 +114,6 @@ def parse_setting_html(pq_doc, scp_type):
             'subtext': div('div.canon-snippet-subtext').text(),
             'scp_type': scp_type
         }
-        # link_list.append(new_article['link'])
         setting_list.append(ScpSettingItem(new_article))
     return setting_list
 
@@ -124,6 +130,13 @@ def parse_contest_html(pq_doc):
         if current_contest_name is not None and len(current_contest_name) > 2:
             last_contest_name = current_contest_name
             last_contest_link = current_contest_link
+            new_contest = {
+                'title': last_contest_name,
+                'link': last_contest_link,
+                'scp_type': DATA_TYPE['contest-archive'],
+                'creator': tds[1].text()
+            }
+            contest_list.append(ScpContestItem(new_contest))
         else:
             current_contest_name = last_contest_name
             current_contest_link = last_contest_link
@@ -142,8 +155,8 @@ def parse_contest_html(pq_doc):
             new_article['contest_link'] = current_contest_link
             new_plus_article['contest_name'] = current_contest_name
             new_plus_article['contest_link'] = tds[0]('a').attr('href')
-            new_article['scp_type'] = DATA_TYPE['contest-archive']
-            new_plus_article['scp_type'] = DATA_TYPE['contest-archive']
+            new_article['scp_type'] = DATA_TYPE['contest-archive-winner']
+            new_plus_article['scp_type'] = DATA_TYPE['contest-archive-winner']
 
             if new_article['link'] is not None:
                 contest_list.append(ScpContestWinnerItem(new_article))
@@ -155,7 +168,7 @@ def parse_contest_html(pq_doc):
             new_article['author'] = tds[3].text()
             new_article['contest_name'] = current_contest_name
             new_article['contest_link'] = current_contest_link
-            new_article['scp_type'] = DATA_TYPE['contest-archive']
+            new_article['scp_type'] = DATA_TYPE['contest-archive-winner']
 
             if new_article['link'] is not None:
                 contest_list.append(ScpContestWinnerItem(new_article))
@@ -167,8 +180,16 @@ def parse_contest_cn_html(pq_doc):
     h3_list = list(pq_doc('div#main-content h3').items())
     for i in range(len(h3_list)):
         h3 = h3_list[i]
+        contest_a = list(h3('a').items())[0]
         current_p = list(h3.siblings('p').items())[i]
         current_holder = list(current_p('span:first').items())[0]
+        new_contest = {
+            'title': contest_a.text(),
+            'link': contest_a.attr('href'),
+            'scp_type': DATA_TYPE['contest-archive-cn'],
+            'creator': list(current_holder('a').items())[1].text()
+        }
+        contest_list.append(ScpContestItem(new_contest))
         for a in current_holder.siblings('a').items():
             new_article = {
                 'title': a.text(),
@@ -176,7 +197,7 @@ def parse_contest_cn_html(pq_doc):
                 'author': a.next('span.printuser>a:last').text(),
                 'contest_name': h3('span').text(),
                 'contest_link': h3('span>a').attr('href'),
-                'scp_type': DATA_TYPE['contest-archive-cn']
+                'scp_type': DATA_TYPE['contest-archive-cn-winner']
             }
             
             contest_list.append(ScpContestWinnerItem(new_article))

@@ -4,7 +4,7 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import sqlite3
-from .spiders.constants import DB_NAME, DATA_TYPE
+from .spiders.constants import DB_NAME
 from .items import *
 
 
@@ -26,32 +26,35 @@ def write_to_db(cur, scp_item):
                 (scp_item['title'], scp_item['link'], scp_item['scp_type'], scp_item['author'],
                  scp_item['created_time'], scp_item['month'], scp_item['page_code'],))
         elif type(scp_item) == ScpStorySeriesItem:
+            print("insert ScpStorySeriesItem")
             cur.execute(
                 '''insert into scp_collection (title, link, scp_type, author, snippet) values (?,?,?,?,?)''',
                 (scp_item['title'], scp_item['link'], scp_item['scp_type'], scp_item['author'],
                  scp_item['snippet'],))
+        elif type(scp_item) == ScpContestWinnerItem:
+            print("insert ScpContestWinnerItem")
+            cur.execute(
+                '''insert into scps (title, link, scp_type, author, contest_name, contest_link) values 
+                    (?,?,?,?,?,?)''',
+                (scp_item['title'], scp_item['link'], scp_item['scp_type'], scp_item['author'],
+                 scp_item['contest_name'], scp_item['contest_link'],))
+        elif type(scp_item) == ScpContestItem:
+            print("insert ScpContestItem")
+            cur.execute(
+                '''insert into scp_collection (title, link, scp_type, creator) values 
+                    (?,?,?,?)''',
+                (scp_item['title'], scp_item['link'], scp_item['scp_type'], scp_item['creator'],))
         elif type(scp_item) == ScpSettingItem:
-            cur.execute('''insert into scps values (NULL, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
-                        (scp_item['title'], scp_item['link'], scp_item['detail'], scp_item['download_type'],
-                         scp_item['scp_type'],
-                         scp_item['cn'], scp_item['not_found'], scp_item['author'], scp_item['desc'],
-                         scp_item['snippet'],
-                         scp_item['subtext'],
-                         scp_item['contest_name'], scp_item['contest_link'], scp_item['created_time'],
-                         scp_item['month'],
-                         scp_item['event_type'], scp_item['page_code'], scp_item['tags'],))
-        # elif type(scp_item) == ScpContestWinnerItem:
-        #     pass
-            # cur.execute(
-            #     '''insert into scps (title, link, scp_type, author, contest_name, contest_link) values
-            #     (?,?,?,?,?,?)''',
-            #     (scp_item['title'], scp_item['link'], scp_item['scp_type'], scp_item['author'],
-            #      scp_item['contest_name'], scp_item['contest_link'], ))
+            print("insert ScpSettingItem")
+            cur.execute('''insert into scp_collection (title, link, desc, scp_type, snippet, subtext) values 
+                (NULL, ?,?,?,?,?,?)''',
+                        (scp_item['title'], scp_item['link'], scp_item['scp_type'], scp_item['desc'],
+                         scp_item['snippet'], scp_item['subtext'],))
+
         elif type(scp_item) == ScpBaseItem:
             print("insert ScpBaseItem" + scp_item['title'])
             cur.execute('''insert into scps (title, link, scp_type) values (?,?,?)''',
                         (scp_item['title'], scp_item['link'], scp_item['scp_type'],))
-
 
     except Exception as e:
         print(e)
