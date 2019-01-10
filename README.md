@@ -10,10 +10,10 @@
 TODO：
 - [x] TALE
 - [x] ARCHIVES
-- Collections
-    - [ ] 故事系列
-    - [ ] 设定中心
-    - [ ] 征文竞赛
+- Collections(内页没抓)
+    - [x] 故事系列
+    - [x] 设定中心
+    - [x] 征文竞赛
 - 补充内容（不作为目录）
     - [x] 事故记录
     - [ ] offset
