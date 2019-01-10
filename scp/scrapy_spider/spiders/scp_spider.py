@@ -31,6 +31,8 @@ def get_empty_link_for_detail():
     cur = con.cursor()
     cur.execute('select link from scps where detail is NULL;')
     link_list = [t[0] for t in cur]
+    cur.execute('select link from scp_collection where detail is NULL;')
+    link_list = link_list + [t[0] for t in cur]
     con.close()
     return link_list
 
@@ -50,7 +52,8 @@ class ScpListSpider(scrapy.Spider):  # 需要继承scrapy.Spider类
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
     item_list_urls = SERIES_ENDPOINTS + SERIES_CN_ENDPOINTS + list(ENDPOINTS.values()) + REPORT_ENDPOINTS
-    collection_list_url = list(COLLECTION_ENDPOINTS.values()) + SERIES_STORY_ENDPOINTS
+    collection_list_url = list(COLLECTION_ENDPOINTS.values()) \
+                          + SERIES_STORY_ENDPOINTS
 
     start_urls = collection_list_url
 

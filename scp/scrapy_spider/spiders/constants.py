@@ -153,9 +153,9 @@ REVERSE_ENDPOINTS = dict(zip(ENDPOINTS.values(), ENDPOINTS.keys()))
 
 SERIES_STORY_ENDPOINTS = [
     '{_s_}://{_d_}/series-archive'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/series-archive/p/1'.format(**URL_PARAMS),
     '{_s_}://{_d_}/series-archive/p/2'.format(**URL_PARAMS),
     '{_s_}://{_d_}/series-archive/p/3'.format(**URL_PARAMS),
+    '{_s_}://{_d_}/series-archive/p/4'.format(**URL_PARAMS),
 ]
 
 COLLECTION_ENDPOINTS = {

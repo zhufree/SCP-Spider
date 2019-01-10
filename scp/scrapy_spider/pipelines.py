@@ -34,20 +34,20 @@ def write_to_db(cur, scp_item):
         elif type(scp_item) == ScpContestWinnerItem:
             print("insert ScpContestWinnerItem")
             cur.execute(
-                '''insert into scps (title, link, scp_type, author, contest_name, contest_link) values 
+                '''insert into scps (title, link, scp_type, author, contest_name, contest_link) values
                     (?,?,?,?,?,?)''',
                 (scp_item['title'], scp_item['link'], scp_item['scp_type'], scp_item['author'],
                  scp_item['contest_name'], scp_item['contest_link'],))
         elif type(scp_item) == ScpContestItem:
             print("insert ScpContestItem")
             cur.execute(
-                '''insert into scp_collection (title, link, scp_type, creator) values 
+                '''insert into scp_collection (title, link, scp_type, author) values 
                     (?,?,?,?)''',
                 (scp_item['title'], scp_item['link'], scp_item['scp_type'], scp_item['creator'],))
         elif type(scp_item) == ScpSettingItem:
             print("insert ScpSettingItem")
-            cur.execute('''insert into scp_collection (title, link, desc, scp_type, snippet, subtext) values 
-                (NULL, ?,?,?,?,?,?)''',
+            cur.execute('''insert into scp_collection (title, link, scp_type, desc, snippet, subtext) values 
+                (?,?,?,?,?,?)''',
                         (scp_item['title'], scp_item['link'], scp_item['scp_type'], scp_item['desc'],
                          scp_item['snippet'], scp_item['subtext'],))
 
@@ -62,6 +62,8 @@ def write_to_db(cur, scp_item):
 
 def update_detail_in_db(cur, detail_item):
     cur.execute('''UPDATE scps SET detail = ?, not_found = ? WHERE LINK = ?''',
+                (detail_item['detail'], detail_item['not_found'], detail_item['link']))
+    cur.execute('''UPDATE scp_collection SET detail = ?, not_found = ? WHERE LINK = ?''',
                 (detail_item['detail'], detail_item['not_found'], detail_item['link']))
 
 
