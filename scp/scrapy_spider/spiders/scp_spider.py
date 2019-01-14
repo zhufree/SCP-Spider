@@ -88,7 +88,10 @@ class ScpDetailSpider(scrapy.Spider):
     def parse(self, response):
         if response.status != 404:
             detail_dom = response.css('div#page-content')[0]
-            detail_item = ScpDetailItem(link=response.url[30:],
+            link = response.url[30:]
+            if link == '/taboo':
+                link = '/scp-4000'
+            detail_item = ScpDetailItem(link=link,
                                         detail=detail_dom.extract().replace('  ', '').replace('\n', ''), not_found=0)
         else:
             detail_item = ScpDetailItem(link=response.url[30:], detail="<h3>抱歉，该页面尚无内容</h3>", not_found=1)

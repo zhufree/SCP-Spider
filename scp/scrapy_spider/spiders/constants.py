@@ -62,15 +62,15 @@ URL_PARAMS = {
 }
 
 DATA_TYPE = {
-    # list
+    # 3
     'single-page': 0,
 
-    'scp-series': 1,
-    'scp-series-cn': 2,
-
+    'scp-series': 1,  # 0
+    'scp-series-cn': 2,  # 1
+    # 2
     'tales-by-page-name': 3,
     'tales-cn-by-page-name': 4,
-
+    # 3
     'joke-scps': 5,
     'joke-scps-cn': 6,
     'archived-scps': 7,
@@ -79,7 +79,7 @@ DATA_TYPE = {
     'decommissioned-scps': 10,
     'scp-removed': 11,
     'reports-interviews-and-logs': 12,
-
+    # 4
     'canon-hub': 13,
     'canon-hub-cn': 14,
     'contest-archive': 15,
