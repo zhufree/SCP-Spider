@@ -53,9 +53,9 @@ def write_to_csv(article_list, file_name):
     """
     with open(file_name, 'w+', encoding='utf-8', newline='') as f:
         # 统一header，方便后续合并文件一起上传
-        writer = csv.DictWriter(f, ['link', 'title', 'scp_type', 'download_type', 'detail', 'cn', 'not_found', \
-                                    'author', 'desc', 'snippet', 'subtext', 'contest_name', 'contest_link', \
-                                    'created_time', 'month', 'event_type', 'page_code', 'tags'])
+        writer = csv.DictWriter(f, ["ID", "title", "link", "detail", "download_type", "scp_type", "not_found", "author",
+                                    "created_time", "month", "event_type", "page_code", "tags", "contest_name",
+                                    "contest_link"])
         writer.writeheader()
         writer.writerows(article_list)
 
@@ -75,19 +75,19 @@ def write_sub_cate_to_csv(sub_cate_list, filename):
         writer.writerows(sub_cate_list)
 
 
-def split_csv_file():
+def split_csv_file(filename):
     """
     split a big csv file to several file for upload to bmob
     :return:
     """
-    all_scp = get_scp_from_file('other.csv')
+    all_scp = get_scp_from_file(filename)
     # 4000一组
     for i in range(0, 2):
         if i * 6000 + 6000 > len(all_scp):
             scp_group = all_scp[i * 6000:]
         else:
             scp_group = all_scp[i * 6000: i * 6000 + 6000]
-        write_to_csv(scp_group, "other-split-" + str(i) + '.csv')
+        write_to_csv(scp_group, "split-" + str(i) + "-" + filename)
 
 
 def update_tag_by_db(filename, db_filename):
@@ -131,4 +131,3 @@ def write_to_db(filename, db_filename):
 
     con.commit()
     con.close()
-
