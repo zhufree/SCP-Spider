@@ -10,6 +10,7 @@ from .core import ScpSpider
 # if __name__ == '__main__':
 c = ScpSpider()
 # c.crawl_main_list()
-# c.crawl_main_detail()
-c.crawl_single_pages()
-c.set_download_type()
+c.crawl_offset_pages()
+# c.crawl_single_pages()
+# c.set_download_type()
+# c.split_csv()

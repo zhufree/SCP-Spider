@@ -46,6 +46,16 @@ def get_404_link_for_detail():
     return link_list
 
 
+def get_all_link_by_download_type(download_type):
+    con = sqlite3.connect(DB_NAME)
+    cur = con.cursor()
+    cur.execute('select link from scps where download_type = ' + str(download_type) + ';')
+    link_list = [t[0] for t in cur]
+    con.close()
+    return link_list
+    # return ['/scp-cn-1000']
+
+
 class ScpListSpider(scrapy.Spider):  # 需要继承scrapy.Spider类
 
     name = "main_list_spider"  # 定义蜘蛛名
@@ -98,6 +108,29 @@ class ScpDetailSpider(scrapy.Spider):
         yield detail_item
 
 
+class ScpOffsetSpider(scrapy.Spider):
+    name = 'offset_spider'
+    allowed_domains = 'scp-wiki-cn.wikidot.com'
+    start_urls = [('{_s_}://{_d_}' + link + '/offset/1').format(**URL_PARAMS) for link in
+                  get_all_link_by_download_type(1)]
+    handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
+
+    def parse(self, response):
+        dom = pq(response.body)
+        if response.status != 404 and len(list(dom.find('#page-content .list-pages-box .list-pages-item'))) > 0:
+            detail_dom = response.css('div#page-content')[0]
+            offset_index = int(response.url.split('/')[-1])  # .../scp-xxx/offset/x
+            link = response.url[30:]
+            title = response.css('div#page-title')[0].css('::text').extract()[0].strip() + '-offset-' + str(offset_index)
+            offset_item = ScpBaseItem(link=link, title=title, scp_type=DATA_TYPE['offset'],
+                                      detail=detail_dom.extract().replace('  ', '').replace('\n', ''), not_found=0)
+            yield offset_item
+            offset_request = scrapy.Request(response.url[0:-1] + str(offset_index + 1), callback=parse_offset,
+                                            headers=HEADERS, dont_filter=True)
+            yield offset_request
+        # yield detail_item
+
+
 class ScpTagSpider(scrapy.Spider):  # 需要继承scrapy.Spider类
 
     name = "tag_spider"  # 定义蜘蛛名
@@ -118,6 +151,25 @@ class ScpTagSpider(scrapy.Spider):  # 需要继承scrapy.Spider类
             yield tag_request
 
 
+class ScpCollectionSpider(scrapy.Spider):  # 需要继承scrapy.Spider类
+
+    name = "collection_spider"  # 定义蜘蛛名
+    allowed_domains = 'scp-wiki-cn.wikidot.com'
+
+    start_urls = [('{_s_}://{_d_}' + link ).format(**URL_PARAMS) for link in
+                  get_all_link_by_download_type(4)]
+
+    def parse(self, response):
+        pq_doc = pq(response.body)
+        for a in pq_doc('div.pages-tag-cloud-box a').items():
+            tag_name = a.text()
+            link = a.attr('href')
+            tag_request = scrapy.Request(response.urljoin(link), callback=parse_tag, headers=HEADERS)
+            tag_request.meta['tag_name'] = tag_name
+            yield tag_request
+
+
+
 def parse_tag(response):
     pq_doc = pq(response.body)
     tag_name = response.meta['tag_name']
@@ -128,3 +180,18 @@ def parse_tag(response):
             tags=tag_name,
         )
         yield new_article
+
+
+def parse_offset(response):
+    if response.status != 404 and len(response.css('#page-content .list-pages-box.list-page-item')) > 0:
+        # offset为空不是404，需要判断这个标签内容是不是为空
+        detail_dom = response.css('div#main-content')[0]
+        offset_index = int(response.url.split('/')[-1])  # .../scp-xxx/offset/x
+        link = response.url[30:]
+        title = response.css('div#page-title')[0].css('::text').extract()[0].strip() + '-offset-' + str(offset_index)
+        offset_item = ScpBaseItem(link=link, title=title, scp_type=DATA_TYPE['offset'],
+                                  detail=detail_dom.extract().replace('  ', '').replace('\n', ''), not_found=0)
+        yield offset_item
+        offset_request = scrapy.Request(response.url[0:-1] + str(offset_index + 1), callback=parse_offset,
+                                        headers=HEADERS, dont_filter=True)
+        yield offset_request

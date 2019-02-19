@@ -4,7 +4,7 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import sqlite3
-from .spiders.constants import DB_NAME
+from .spiders.constants import DB_NAME, DATA_TYPE
 from .items import *
 
 
@@ -52,9 +52,15 @@ def write_to_db(cur, scp_item):
                          scp_item['snippet'], scp_item['subtext'],))
 
         elif type(scp_item) == ScpBaseItem:
-            print("insert ScpBaseItem" + scp_item['title'])
-            cur.execute('''insert into scps (title, link, scp_type) values (?,?,?)''',
-                        (scp_item['title'], scp_item['link'], scp_item['scp_type'],))
+            print(scp_item['title'])
+            if scp_item['scp_type'] == DATA_TYPE['offset']:
+                print("insert ScpOffsetItem" + scp_item['title'])
+                cur.execute('''insert into scps (title, link, scp_type, detail, not_found) values (?,?,?,?,?)''',
+                            (scp_item['title'], scp_item['link'], scp_item['scp_type'], scp_item['detail'],
+                             scp_item['not_found'],))
+            else:
+                cur.execute('''insert into scps (title, link, scp_type) values (?,?,?)''',
+                            (scp_item['title'], scp_item['link'], scp_item['scp_type'],))
 
     except Exception as e:
         print(e)

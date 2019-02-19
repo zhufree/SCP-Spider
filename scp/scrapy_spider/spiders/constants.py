@@ -87,7 +87,8 @@ DATA_TYPE = {
     'contest-archive-cn': 17,
     'contest-archive-cn-winner': 18,
     'series-archive': 19,
-    'series-archive-cn': 20
+    'series-archive-cn': 20,
+    'offset': 21
 }
 
 TALE_LETTER_LIST = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
@@ -110,11 +111,12 @@ SINGLE_PAGE_ENDPOINTS = [
     '{_s_}://{_d_}/secure-facilities-locations-cn'.format(**URL_PARAMS),
     '{_s_}://{_d_}/object-classes'.format(**URL_PARAMS),
     '{_s_}://{_d_}/security-clearance-levels'.format(**URL_PARAMS),
+    '{_s_}://{_d_}/task-forces'.format(**URL_PARAMS),
+
     '{_s_}://{_d_}/log-of-extranormal-events'.format(**URL_PARAMS),
     '{_s_}://{_d_}/log-of-extranormal-events-cn'.format(**URL_PARAMS),
     '{_s_}://{_d_}/log-of-anomalous-items'.format(**URL_PARAMS),
     '{_s_}://{_d_}/log-of-anomalous-items-cn'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/task-forces'.format(**URL_PARAMS),
 
     '{_s_}://{_d_}/faq'.format(**URL_PARAMS),
     '{_s_}://{_d_}/guide-for-newbies'.format(**URL_PARAMS),

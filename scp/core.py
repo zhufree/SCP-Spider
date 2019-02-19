@@ -32,6 +32,9 @@ class ScpSpider:
     def crawl_single_pages(self):
         os.system('cd scp/scrapy_spider && scrapy crawl single_page_spider')
 
+    def crawl_offset_pages(self):
+        os.system('cd scp/scrapy_spider && scrapy crawl offset_spider')
+
     def split_csv(self):
         split_csv_file('scps.csv')
 
@@ -42,6 +45,7 @@ class ScpSpider:
         cur.execute("update scps set download_type = 1 where scp_type = 2;")
         cur.execute("update scps set download_type = 2 where scp_type in (3,4);")
         cur.execute("update scps set download_type = 3 where scp_type in (0,5,6,7,8,9,10,11,12);")
+        cur.execute("update scps set download_type = 4 where scp_type in (16,18);")
         cur.execute("update scp_collection set download_type = 4;")
         con.commit()
         con.close()
