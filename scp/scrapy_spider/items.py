@@ -32,7 +32,7 @@ class ScpTaleItem(ScpBaseItem):
 
 
 # FIXME 竞赛胜出文章
-class ScpContestWinnerItem(ScpBaseItem):
+class ScpContestArticleItem(ScpBaseItem):
     author = scrapy.Field()
     contest_name = scrapy.Field()
     contest_link = scrapy.Field()

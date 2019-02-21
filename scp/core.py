@@ -35,6 +35,9 @@ class ScpSpider:
     def crawl_offset_pages(self):
         os.system('cd scp/scrapy_spider && scrapy crawl offset_spider')
 
+    def crawl_collection_pages(self):
+        os.system('cd scp/scrapy_spider && scrapy crawl collection_spider')
+
     def split_csv(self):
         split_csv_file('scps.csv')
 

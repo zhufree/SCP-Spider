@@ -31,13 +31,12 @@ def write_to_db(cur, scp_item):
                 '''insert into scp_collection (title, link, scp_type, author, snippet) values (?,?,?,?,?)''',
                 (scp_item['title'], scp_item['link'], scp_item['scp_type'], scp_item['author'],
                  scp_item['snippet'],))
-        elif type(scp_item) == ScpContestWinnerItem:
+        elif type(scp_item) == ScpContestArticleItem:
             print("insert ScpContestWinnerItem")
             cur.execute(
-                '''insert into scps (title, link, scp_type, author, contest_name, contest_link) values
-                    (?,?,?,?,?,?)''',
-                (scp_item['title'], scp_item['link'], scp_item['scp_type'], scp_item['author'],
-                 scp_item['contest_name'], scp_item['contest_link'],))
+                '''insert into scps (title, link, scp_type) values
+                    (?,?,?)''',
+                (scp_item['title'], scp_item['link'], scp_item['scp_type']))
         elif type(scp_item) == ScpContestItem:
             print("insert ScpContestItem")
             cur.execute(

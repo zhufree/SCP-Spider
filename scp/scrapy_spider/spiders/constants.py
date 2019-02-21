@@ -82,13 +82,17 @@ DATA_TYPE = {
     # 4
     'canon-hub': 13,
     'canon-hub-cn': 14,
+    # 竞赛
     'contest-archive': 15,
-    'contest-archive-winner': 16,
+    # 竞赛
+    'contest-archive-item': 16,
+    # 中分竞赛
     'contest-archive-cn': 17,
-    'contest-archive-cn-winner': 18,
+    'contest-archive-cn-item': 18,
     'series-archive': 19,
     'series-archive-cn': 20,
-    'offset': 21
+    'offset': 21,
+    'canon_item': 22
 }
 
 TALE_LETTER_LIST = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',

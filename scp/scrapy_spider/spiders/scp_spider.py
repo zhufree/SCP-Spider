@@ -55,6 +55,21 @@ def get_all_link_by_download_type(download_type):
     return link_list
     # return ['/scp-cn-1000']
 
+def get_content_link():
+    con = sqlite3.connect(DB_NAME)
+    cur = con.cursor()
+    cur.execute('select link from scp_collection where scp_type = 17;')
+    link_list = [t[0] for t in cur]
+    con.close()
+    return link_list
+
+def get_canon_link():
+    con = sqlite3.connect(DB_NAME)
+    cur = con.cursor()
+    cur.execute('select link from scp_collection where scp_type in (13,14);')
+    link_list = [t[0] for t in cur]
+    con.close()
+    return link_list
 
 class ScpListSpider(scrapy.Spider):  # 需要继承scrapy.Spider类
 
@@ -92,7 +107,7 @@ class ScpSinglePageSpider(scrapy.Spider):
 class ScpDetailSpider(scrapy.Spider):
     name = 'detail_spider'
     allowed_domains = 'scp-wiki-cn.wikidot.com'
-    start_urls = [('{_s_}://{_d_}' + link).format(**URL_PARAMS) for link in get_empty_link_for_detail()]
+    start_urls = [('{_s_}://{_d_}' + link).format(**URL_PARAMS) for link in get_404_link_for_detail()]
     handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
 
     def parse(self, response):
@@ -112,7 +127,7 @@ class ScpOffsetSpider(scrapy.Spider):
     name = 'offset_spider'
     allowed_domains = 'scp-wiki-cn.wikidot.com'
     start_urls = [('{_s_}://{_d_}' + link + '/offset/1').format(**URL_PARAMS) for link in
-                  get_all_link_by_download_type(1)]
+                  get_all_link_by_download_type(0)]
     handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
 
     def parse(self, response):
@@ -150,23 +165,22 @@ class ScpTagSpider(scrapy.Spider):  # 需要继承scrapy.Spider类
             tag_request.meta['tag_name'] = tag_name
             yield tag_request
 
+# 抓竞赛内容页里面的列表
+class ScpCollectionSpider(scrapy.Spider):
 
-class ScpCollectionSpider(scrapy.Spider):  # 需要继承scrapy.Spider类
-
-    name = "collection_spider"  # 定义蜘蛛名
+    name = "collection_spider"
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
-    start_urls = [('{_s_}://{_d_}' + link ).format(**URL_PARAMS) for link in
-                  get_all_link_by_download_type(4)]
+    start_urls = [('{_s_}://{_d_}' + link).format(**URL_PARAMS) for link in
+                  get_canon_link()]
+    handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
 
     def parse(self, response):
         pq_doc = pq(response.body)
-        for a in pq_doc('div.pages-tag-cloud-box a').items():
-            tag_name = a.text()
-            link = a.attr('href')
-            tag_request = scrapy.Request(response.urljoin(link), callback=parse_tag, headers=HEADERS)
-            tag_request.meta['tag_name'] = tag_name
-            yield tag_request
+        item_list = parse_html(pq_doc, DATA_TYPE['canon_item'])
+        for info in item_list:
+            # print(info)
+            yield info
 
 
 

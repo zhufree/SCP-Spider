@@ -23,10 +23,13 @@ def parse_html(pq_doc, scp_type):
     elif DATA_TYPE['reports-interviews-and-logs'] < scp_type <= DATA_TYPE['canon-hub-cn']:
         return parse_setting_html(pq_doc, scp_type)
     elif scp_type == DATA_TYPE['contest-archive']:
-        return parse_contest_html(pq_doc)
+        return parse_contest_list_html(pq_doc)
     elif scp_type == DATA_TYPE['contest-archive-cn']:
         return parse_contest_cn_html(pq_doc)
-    elif DATA_TYPE['contest-archive-cn-winner'] < scp_type <= DATA_TYPE['series-archive-cn']:
+    elif scp_type == DATA_TYPE['contest-archive-item'] or scp_type == DATA_TYPE['contest-archive-cn-item']\
+            or scp_type == DATA_TYPE['canon_item']:
+        return parse_collection_item_html(pq_doc, scp_type)
+    elif DATA_TYPE['contest-archive-cn-item'] < scp_type <= DATA_TYPE['series-archive-cn']:
         return parse_story_series_html(pq_doc, scp_type)
 
 
@@ -117,8 +120,8 @@ def parse_setting_html(pq_doc, scp_type):
         setting_list.append(ScpSettingItem(new_article))
     return setting_list
 
-
-def parse_contest_html(pq_doc):
+# 没有麦
+def parse_contest_list_html(pq_doc):
     contest_list = []
     last_contest_name = ""
     last_contest_link = ""
@@ -141,37 +144,37 @@ def parse_contest_html(pq_doc):
             current_contest_name = last_contest_name
             current_contest_link = last_contest_link
 
-        if len(list(tds[2]('br').items())) != 0:
-            new_plus_article = {}
-            double_a = list(tds[2]('a').items())
-            double_author = str(tds[3].html()).split('<br />')
-            new_article['title'] = double_a[0].text()
-            new_article['link'] = double_a[0].attr('href')
-            new_article['author'] = double_author[0]
-            new_plus_article['title'] = double_a[1].text()
-            new_plus_article['link'] = double_a[1].attr('href')
-            new_plus_article['author'] = double_author[1]
-            new_article['contest_name'] = current_contest_name
-            new_article['contest_link'] = current_contest_link
-            new_plus_article['contest_name'] = current_contest_name
-            new_plus_article['contest_link'] = tds[0]('a').attr('href')
-            new_article['scp_type'] = DATA_TYPE['contest-archive-winner']
-            new_plus_article['scp_type'] = DATA_TYPE['contest-archive-winner']
-
-            if new_article['link'] is not None:
-                contest_list.append(ScpContestWinnerItem(new_article))
-            if new_plus_article['link'] is not None:
-                contest_list.append(ScpContestWinnerItem(new_plus_article))
-        else:
-            new_article['title'] = tds[2].text()
-            new_article['link'] = tds[2]('a').attr('href')
-            new_article['author'] = tds[3].text()
-            new_article['contest_name'] = current_contest_name
-            new_article['contest_link'] = current_contest_link
-            new_article['scp_type'] = DATA_TYPE['contest-archive-winner']
-
-            if new_article['link'] is not None:
-                contest_list.append(ScpContestWinnerItem(new_article))
+        # if len(list(tds[2]('br').items())) != 0:
+        #     new_plus_article = {}
+        #     double_a = list(tds[2]('a').items())
+        #     double_author = str(tds[3].html()).split('<br />')
+        #     new_article['title'] = double_a[0].text()
+        #     new_article['link'] = double_a[0].attr('href')
+        #     new_article['author'] = double_author[0]
+        #     new_plus_article['title'] = double_a[1].text()
+        #     new_plus_article['link'] = double_a[1].attr('href')
+        #     new_plus_article['author'] = double_author[1]
+        #     new_article['contest_name'] = current_contest_name
+        #     new_article['contest_link'] = current_contest_link
+        #     new_plus_article['contest_name'] = current_contest_name
+        #     new_plus_article['contest_link'] = tds[0]('a').attr('href')
+        #     new_article['scp_type'] = DATA_TYPE['contest-archive-item']
+        #     new_plus_article['scp_type'] = DATA_TYPE['contest-archive-item']
+        #
+        #     if new_article['link'] is not None:
+        #         contest_list.append(ScpContestArticleItem(new_article))
+        #     if new_plus_article['link'] is not None:
+        #         contest_list.append(ScpContestArticleItem(new_plus_article))
+        # else:
+        #     new_article['title'] = tds[2].text()
+        #     new_article['link'] = tds[2]('a').attr('href')
+        #     new_article['author'] = tds[3].text()
+        #     new_article['contest_name'] = current_contest_name
+        #     new_article['contest_link'] = current_contest_link
+        #     new_article['scp_type'] = DATA_TYPE['contest-archive-item']
+        #
+        #     if new_article['link'] is not None:
+        #         contest_list.append(ScpContestArticleItem(new_article))
     return contest_list
 
 
@@ -190,17 +193,17 @@ def parse_contest_cn_html(pq_doc):
             'creator': list(current_holder('a').items())[1].text()
         }
         contest_list.append(ScpContestItem(new_contest))
-        for a in current_holder.siblings('a').items():
-            new_article = {
-                'title': a.text(),
-                'link': a.attr('href'),
-                'author': a.next('span.printuser>a:last').text(),
-                'contest_name': h3('span').text(),
-                'contest_link': h3('span>a').attr('href'),
-                'scp_type': DATA_TYPE['contest-archive-cn-winner']
-            }
-            
-            contest_list.append(ScpContestWinnerItem(new_article))
+        # for a in current_holder.siblings('a').items():
+        #     new_article = {
+        #         'title': a.text(),
+        #         'link': a.attr('href'),
+        #         'author': a.next('span.printuser>a:last').text(),
+        #         'contest_name': h3('span').text(),
+        #         'contest_link': h3('span>a').attr('href'),
+        #         'scp_type': DATA_TYPE['contest-archive-cn-item']
+        #     }
+        #
+        #     contest_list.append(ScpContestArticleItem(new_article))
     return contest_list
 
 
@@ -217,3 +220,24 @@ def parse_story_series_html(pq_doc, scp_type):
         }
         story_series_list.append(ScpStorySeriesItem(new_article))
     return story_series_list
+
+
+# articles in content page
+def parse_collection_item_html(pq_doc, scp_type):
+    content_article_list = []
+    for elm_a in list(pq_doc('div#page-content a').items()):
+        link = elm_a.attr('href')
+        if link is not None and 'forum' not in link \
+                and not (link.startswith('http') and 'http://scp-wiki-cn.wikidot.com' not in link) \
+                and 'user:info' not in link\
+                and 'javascript' not in link\
+                and not link.startswith('#'):
+            new_article = {
+                'title': elm_a.text(),
+                'link': link,
+                'scp_type': scp_type
+            }
+            content_article_list.append(ScpContestArticleItem(new_article))
+    return content_article_list
+
+
