@@ -79,6 +79,7 @@ DATA_TYPE = {
     'decommissioned-scps': 10,
     'scp-removed': 11,
     'reports-interviews-and-logs': 12,
+    'offset': 21,
     # 4
     'canon-hub': 13,
     'canon-hub-cn': 14,
@@ -91,7 +92,6 @@ DATA_TYPE = {
     'contest-archive-cn-item': 18,
     'series-archive': 19,
     'series-archive-cn': 20,
-    'offset': 21,
     'canon_item': 22
 }
 

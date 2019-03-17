@@ -107,7 +107,7 @@ class ScpSinglePageSpider(scrapy.Spider):
 class ScpDetailSpider(scrapy.Spider):
     name = 'detail_spider'
     allowed_domains = 'scp-wiki-cn.wikidot.com'
-    start_urls = [('{_s_}://{_d_}' + link).format(**URL_PARAMS) for link in get_404_link_for_detail()]
+    start_urls = [('{_s_}://{_d_}' + link).format(**URL_PARAMS) for link in get_empty_link_for_detail()]
     handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
 
     def parse(self, response):
