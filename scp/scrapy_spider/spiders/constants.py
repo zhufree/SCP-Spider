@@ -6,34 +6,43 @@ HEADERS = {
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
 }
 
-DB_NAME = 'E:\\SCP-Spider\\scp\\scp.db'
+# DB_NAME = 'E:\\SCP-Spider\\scp\\scp.db'
+DB_NAME = '/Users/zhufree/Documents/privateWorkSpace/SCP-Spider/scp/scp.db'
 
-CREATE_DB_SQL = '''
+# 先不用这两个字段
+# [contest_name] TEXT, 
+# [contest_link] TEXT
+# [sub_scp_type] TEXT == page_code/event_type/month .etc
+# scp表结构
+CREATE_DB_SCP_SQL = '''
 CREATE TABLE [scps](
   [_id] INTEGER PRIMARY KEY AUTOINCREMENT, 
+  [index] INTEGER,
   [title] TEXT NOT NULL, 
   [link] TEXT NOT NULL, 
-  [detail] TEXT, 
   [download_type] INTEGER, 
   [scp_type] INTEGER, 
-  [not_found] INTEGER, 
   [author] TEXT, 
   [created_time] TEXT, 
-  [month] TEXT, 
-  [event_type] TEXT, 
-  [page_code] TEXT, 
-  [contest_name] TEXT, 
-  [contest_link] TEXT,
+  [sub_scp_type] TEXT);
+'''
+
+# scp正文内容表结构，用link检索
+CREATE_DB_DETAIL_SQL = '''
+CREATE TABLE [scp_detail](
+  [link] TEXT PRIMARY KEY UNIQUE, 
+  [not_found] INTEGER, 
+  [detail] TEXT, 
   [tags] TEXT);
 '''
 
-CREATE_COLLECTION_DB_SQL = """
 
+CREATE_COLLECTION_DB_SQL = """
 CREATE TABLE [scp_collection](
   [_id] INTEGER PRIMARY KEY AUTOINCREMENT, 
+  [index] INTEGER,
   [title] TEXT NOT NULL, 
   [link] TEXT NOT NULL, 
-  [detail] TEXT, 
   [download_type] INTEGER, 
   [scp_type] INTEGER, 
   [not_found] INTEGER, 
@@ -42,9 +51,8 @@ CREATE TABLE [scp_collection](
   [creator] TEXT,
   [snippet] TEXT, 
   [subtext] TEXT, 
-  [links] TEXT
+  [sub_links] TEXT
 );
-
 """
 
 CREATE_TAG_DB_SQL = """
@@ -79,24 +87,28 @@ DATA_TYPE = {
     'decommissioned-scps': 10,
     'scp-removed': 11,
     'reports-interviews-and-logs': 12,
-    'offset': 21,
-    # 4
+    # 设定中心
     'canon-hub': 13,
     'canon-hub-cn': 14,
     # 竞赛
     'contest-archive': 15,
-    # 竞赛
     'contest-archive-item': 16,
     # 中分竞赛
     'contest-archive-cn': 17,
     'contest-archive-cn-item': 18,
+    # 故事系列
     'series-archive': 19,
     'series-archive-cn': 20,
+    # 迭代页面
+    'offset': 21,
+    # 设定item
     'canon_item': 22
 }
 
 TALE_LETTER_LIST = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
                     'U', 'V', 'W', 'X', 'Y', 'Z', '0-9']
+
+# scp系列目录页面
 SERIES_ENDPOINTS = [
     '{_s_}://{_d_}/scp-series'.format(**URL_PARAMS),
     '{_s_}://{_d_}/scp-series-2'.format(**URL_PARAMS),
@@ -105,11 +117,13 @@ SERIES_ENDPOINTS = [
     '{_s_}://{_d_}/scp-series-5'.format(**URL_PARAMS),
 ]
 
+# scp-cn系列目录页面
 SERIES_CN_ENDPOINTS = [
     '{_s_}://{_d_}/scp-series-cn'.format(**URL_PARAMS),
     '{_s_}://{_d_}/scp-series-cn-2'.format(**URL_PARAMS),
 ]
 
+# 单页面列表，直接抓内容
 SINGLE_PAGE_ENDPOINTS = [
     '{_s_}://{_d_}/secure-facilities-locations'.format(**URL_PARAMS),
     '{_s_}://{_d_}/secure-facilities-locations-cn'.format(**URL_PARAMS),
@@ -127,6 +141,7 @@ SINGLE_PAGE_ENDPOINTS = [
     '{_s_}://{_d_}/how-to-write-an-scp'.format(**URL_PARAMS),
 ]
 
+# 事故报告和采访记录列表目录页面
 REPORT_ENDPOINTS = [
     '{_s_}://{_d_}/incident-reports-eye-witness-interviews-and-personal-logs/p/1'.format(
         **URL_PARAMS),
@@ -140,8 +155,8 @@ REPORT_ENDPOINTS = [
         **URL_PARAMS)
 ]
 
+# 其他列表页面
 ENDPOINTS = {
-    # list
     'tales-by-page-name': '{_s_}://{_d_}/tales-by-page-name'.format(**URL_PARAMS),
     'tales-cn-by-page-name': '{_s_}://{_d_}/tales-cn-by-page-name'.format(**URL_PARAMS),
     'joke-scps': '{_s_}://{_d_}/joke-scps'.format(**URL_PARAMS),
@@ -151,12 +166,11 @@ ENDPOINTS = {
     'scp-ex-cn': '{_s_}://{_d_}/scp-ex-cn'.format(**URL_PARAMS),
     'decommissioned-scps': '{_s_}://{_d_}/decommissioned-scps-arc'.format(**URL_PARAMS),
     'scp-removed': '{_s_}://{_d_}/scp-removed'.format(**URL_PARAMS),
-
-    # TODO 竞赛改成抓竞赛主页
 }
 
 REVERSE_ENDPOINTS = dict(zip(ENDPOINTS.values(), ENDPOINTS.keys()))
 
+# 故事系列列表目录页
 SERIES_STORY_ENDPOINTS = [
     '{_s_}://{_d_}/series-archive'.format(**URL_PARAMS),
     '{_s_}://{_d_}/series-archive/p/2'.format(**URL_PARAMS),
@@ -164,6 +178,7 @@ SERIES_STORY_ENDPOINTS = [
     '{_s_}://{_d_}/series-archive/p/4'.format(**URL_PARAMS),
 ]
 
+# 设定中心，征文竞赛，中国分部故事系列列表页面
 COLLECTION_ENDPOINTS = {
     'canon-hub': '{_s_}://{_d_}/canon-hub'.format(**URL_PARAMS),
     'canon-hub-cn': '{_s_}://{_d_}/canon-hub-cn'.format(**URL_PARAMS),

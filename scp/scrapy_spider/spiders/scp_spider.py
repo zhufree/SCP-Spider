@@ -7,6 +7,7 @@ from .parse import parse_html
 import sqlite3
 
 
+# 根据url反向获取scp_type
 def get_type_by_url(url):
     if url in SERIES_ENDPOINTS:
         return DATA_TYPE['scp-series']
@@ -26,26 +27,27 @@ def get_type_by_url(url):
         return -1
 
 
+# 获取detail表中内容为空的link
 def get_empty_link_for_detail():
     con = sqlite3.connect(DB_NAME)
     cur = con.cursor()
-    cur.execute('select link from scps where detail is NULL;')
+    cur.execute('select link from scp_detail where detail is NULL;')
     link_list = [t[0] for t in cur]
-    cur.execute('select link from scp_collection where detail is NULL;')
-    link_list = link_list + [t[0] for t in cur]
     con.close()
     return link_list
 
 
+# 获取detail表中404的link
 def get_404_link_for_detail():
     con = sqlite3.connect(DB_NAME)
     cur = con.cursor()
-    cur.execute('select link from scps where not_found = 1;')
+    cur.execute('select link from scp_detail where not_found = 1;')
     link_list = [t[0] for t in cur]
     con.close()
     return link_list
 
 
+# 根据download_type获取所有link
 def get_all_link_by_download_type(download_type):
     con = sqlite3.connect(DB_NAME)
     cur = con.cursor()
@@ -55,7 +57,17 @@ def get_all_link_by_download_type(download_type):
     return link_list
     # return ['/scp-cn-1000']
 
-def get_content_link():
+def get_collection_link():
+    # 设定中心
+    # 'canon-hub': 13,
+    # 'canon-hub-cn': 14,
+    # 竞赛
+    # 'contest-archive': 15,
+    # 中分竞赛
+    # 'contest-archive-cn': 17,
+    # 故事系列
+    # 'series-archive': 19,
+    # 'series-archive-cn': 20,
     con = sqlite3.connect(DB_NAME)
     cur = con.cursor()
     cur.execute('select link from scp_collection where scp_type = 17;')
@@ -71,16 +83,22 @@ def get_canon_link():
     con.close()
     return link_list
 
-class ScpListSpider(scrapy.Spider):  # 需要继承scrapy.Spider类
 
-    name = "main_list_spider"  # 定义蜘蛛名
+class ScpListSpider(scrapy.Spider):
+    """
+    抓取scp列表
+    """
+    name = "main_list_spider"
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
-    item_list_urls = SERIES_ENDPOINTS + SERIES_CN_ENDPOINTS + list(ENDPOINTS.values()) + REPORT_ENDPOINTS
+    # 为了防止中途失败，尽量分割成小部分抓取
+    # SERIES_ENDPOINTS # 5
+    # SERIES_CN_ENDPOINTS # 2
+    item_list_urls =  list(ENDPOINTS.values()) + REPORT_ENDPOINTS
     collection_list_url = list(COLLECTION_ENDPOINTS.values()) \
                           + SERIES_STORY_ENDPOINTS
 
-    start_urls = collection_list_url
+    start_urls = SERIES_ENDPOINTS + SERIES_CN_ENDPOINTS + item_list_urls + collection_list_url
 
     def parse(self, response):
         pq_doc = pq(response.body)
@@ -105,6 +123,9 @@ class ScpSinglePageSpider(scrapy.Spider):
 
 
 class ScpDetailSpider(scrapy.Spider):
+    """
+    根据链接抓取页面内容
+    """
     name = 'detail_spider'
     allowed_domains = 'scp-wiki-cn.wikidot.com'
     start_urls = [('{_s_}://{_d_}' + link).format(**URL_PARAMS) for link in get_empty_link_for_detail()]
@@ -124,8 +145,12 @@ class ScpDetailSpider(scrapy.Spider):
 
 
 class ScpOffsetSpider(scrapy.Spider):
+    """
+    抓offset内容
+    """
     name = 'offset_spider'
     allowed_domains = 'scp-wiki-cn.wikidot.com'
+    # 根据download_type分一下
     start_urls = [('{_s_}://{_d_}' + link + '/offset/1').format(**URL_PARAMS) for link in
                   get_all_link_by_download_type(0)]
     handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
@@ -146,6 +171,24 @@ class ScpOffsetSpider(scrapy.Spider):
         # yield detail_item
 
 
+# 抓设定中心/竞赛内容/故事系列页里面的列表
+class ScpCollectionSpider(scrapy.Spider):
+
+    name = "collection_spider"
+    allowed_domains = 'scp-wiki-cn.wikidot.com'
+
+    start_urls = [('{_s_}://{_d_}' + link).format(**URL_PARAMS) for link in
+                  get_canon_link()]
+    handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
+
+    def parse(self, response):
+        pq_doc = pq(response.body)
+        item_list = parse_html(pq_doc, DATA_TYPE['canon_item'])
+        for info in item_list:
+            # print(info)
+            yield info
+
+
 class ScpTagSpider(scrapy.Spider):  # 需要继承scrapy.Spider类
 
     name = "tag_spider"  # 定义蜘蛛名
@@ -164,24 +207,6 @@ class ScpTagSpider(scrapy.Spider):  # 需要继承scrapy.Spider类
             tag_request = scrapy.Request(response.urljoin(link), callback=parse_tag, headers=HEADERS)
             tag_request.meta['tag_name'] = tag_name
             yield tag_request
-
-# 抓竞赛内容页里面的列表
-class ScpCollectionSpider(scrapy.Spider):
-
-    name = "collection_spider"
-    allowed_domains = 'scp-wiki-cn.wikidot.com'
-
-    start_urls = [('{_s_}://{_d_}' + link).format(**URL_PARAMS) for link in
-                  get_canon_link()]
-    handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
-
-    def parse(self, response):
-        pq_doc = pq(response.body)
-        item_list = parse_html(pq_doc, DATA_TYPE['canon_item'])
-        for info in item_list:
-            # print(info)
-            yield info
-
 
 
 def parse_tag(response):

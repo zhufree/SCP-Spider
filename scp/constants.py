@@ -1,31 +1,39 @@
-DB_NAME = 'E:\\SCP-Spider\\scp\\scp.db'
-
-CREATE_DB_SQL = '''
+# DB_NAME = 'E:\\SCP-Spider\\scp\\scp.db'
+DB_NAME = '/Users/zhufree/Documents/privateWorkSpace/SCP-Spider/scp/scp.db'
+# 先不用这两个字段
+# [contest_name] TEXT, 
+# [contest_link] TEXT
+# [sub_scp_type] TEXT == page_code/event_type/month .etc
+# scp表结构
+CREATE_DB_SCP_SQL = '''
 CREATE TABLE [scps](
   [_id] INTEGER PRIMARY KEY AUTOINCREMENT, 
+  [_index] INTEGER,
   [title] TEXT NOT NULL, 
   [link] TEXT NOT NULL, 
-  [detail] TEXT, 
   [download_type] INTEGER, 
   [scp_type] INTEGER, 
-  [not_found] INTEGER, 
   [author] TEXT, 
   [created_time] TEXT, 
-  [month] TEXT, 
-  [event_type] TEXT, 
-  [page_code] TEXT, 
-  [contest_name] TEXT, 
-  [contest_link] TEXT,
+  [sub_scp_type] TEXT);
+'''
+
+# scp正文内容表结构，用link检索
+CREATE_DB_DETAIL_SQL = '''
+CREATE TABLE [scp_detail](
+  [link] TEXT PRIMARY KEY UNIQUE, 
+  [not_found] INTEGER, 
+  [detail] TEXT, 
   [tags] TEXT);
 '''
 
-CREATE_COLLECTION_DB_SQL = """
 
+CREATE_COLLECTION_DB_SQL = """
 CREATE TABLE [scp_collection](
   [_id] INTEGER PRIMARY KEY AUTOINCREMENT, 
+  [_index] INTEGER,
   [title] TEXT NOT NULL, 
   [link] TEXT NOT NULL, 
-  [detail] TEXT, 
   [download_type] INTEGER, 
   [scp_type] INTEGER, 
   [not_found] INTEGER, 
@@ -34,9 +42,8 @@ CREATE TABLE [scp_collection](
   [creator] TEXT,
   [snippet] TEXT, 
   [subtext] TEXT, 
-  [links] TEXT
+  [sub_links] TEXT
 );
-
 """
 
 CREATE_TAG_DB_SQL = """

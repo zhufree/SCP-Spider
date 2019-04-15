@@ -40,10 +40,15 @@ def parse_series_html(pq_doc, scp_type):
     for ul in list(pq_doc('div#page-content ul').items())[1:end_index]:
         for li in ul('li').items():
             link = li('a').attr('href')
+            link_part = link.split('-')
+            index = -1
+            if len(link_part) > 1:
+                index = int(link_part[1 if scp_type == DATA_TYPE['scp-series'] else 2])
             new_article = {
                 'title': li.text(),
                 'link': link,
                 'scp_type': scp_type,
+                'index': index
             }
             base_info_list.append(ScpBaseItem(new_article))
 
@@ -52,6 +57,7 @@ def parse_series_html(pq_doc, scp_type):
 
 def parse_tale_html(pq_doc, scp_type):
     tale_list = []
+    index = 0
     for i in range(0, 27):
         for section_tr in list(list(pq_doc('div#page-content .section').items())[i]('div.list-pages-box tr').items()):
             tds = list(section_tr('td').items())
@@ -60,16 +66,18 @@ def parse_tale_html(pq_doc, scp_type):
                 'link': tds[0]('a').attr('href'),
                 'author': tds[1].text(),
                 'created_time': tds[2].text(),
-                'month': get_tale_year_by_time(tds[2].text()),
-                'page_code': TALE_LETTER_LIST[i],
-                'scp_type': scp_type
+                'scp_type': scp_type,
+                'sub_scp_type': TALE_LETTER_LIST[i],
+                'index': index
             }
             tale_list.append(ScpTaleItem(new_tale))
+            index += 1
     return tale_list
 
 
 def parse_archives_html(pq_doc, scp_type):
     base_info_list = []
+    index = 0
     parse_path = 'div#page-content div.content-panel ul li' if scp_type == DATA_TYPE[
         'archived-scps'] else 'div.content-panel>ul>li'
     for li in list(pq_doc(parse_path).items()):
@@ -77,37 +85,44 @@ def parse_archives_html(pq_doc, scp_type):
         new_article = {
             'title': li.text(),
             'link': link,
-            'scp_type': scp_type
+            'scp_type': scp_type,
+            'index': index
         }
         base_info_list.append(ScpBaseItem(new_article))
+        index += 1
     return base_info_list
 
 
+report_index = 0
 def parse_report_html(pq_doc):
+    global report_index
     item_list = []
     for i in range(0, 5):
         for li in pq_doc('#wiki-tab-0-' + str(i) + ' .list-pages-box>ul>li').items():
             new_article = {
                 'link': li('a').attr('href'),
                 'title': li('a').text(),
-                'scp_type': DATA_TYPE['reports-interviews-and-logs']
+                'scp_type': DATA_TYPE['reports-interviews-and-logs'],
+                'index': report_index
             }
             if i == 0:
-                new_article['event_type'] = 'lab_record'
+                new_article['sub_scp_type'] = 'lab_record'
             elif i == 1:
-                new_article['event_type'] = 'discovery_report'
+                new_article['sub_scp_type'] = 'discovery_report'
             elif i == 2:
-                new_article['event_type'] = 'event_report'
+                new_article['sub_scp_type'] = 'event_report'
             elif i == 3:
-                new_article['event_type'] = 'interview'
+                new_article['sub_scp_type'] = 'interview'
             elif i == 4:
-                new_article['event_type'] = 'addon'
-            item_list.append(ScpEventItem(new_article))
+                new_article['sub_scp_type'] = 'addon'
+            item_list.append(ScpBaseItem(new_article))
+            report_index += 1
     return item_list
 
 
 def parse_setting_html(pq_doc, scp_type):
     setting_list = []
+    index = 0
     for div in list(pq_doc('div.centered').items()):
         new_article = {
             'title': div('div.canon-title a').text(),
@@ -115,16 +130,19 @@ def parse_setting_html(pq_doc, scp_type):
             'desc': div('div.canon-description').text(),
             'snippet': div('div.canon-snippet').text(),
             'subtext': div('div.canon-snippet-subtext').text(),
-            'scp_type': scp_type
+            'scp_type': scp_type,
+            'index': index
         }
         setting_list.append(ScpSettingItem(new_article))
+        index += 1
     return setting_list
 
-# 没有麦
+
 def parse_contest_list_html(pq_doc):
     contest_list = []
     last_contest_name = ""
     last_contest_link = ""
+    index = 0
     for section_tr in list(pq_doc('div#page-content .content-type-description>table tr').items())[2:]:
         new_article = {}
         tds = list(section_tr('td').items())
@@ -137,8 +155,10 @@ def parse_contest_list_html(pq_doc):
                 'title': last_contest_name,
                 'link': last_contest_link,
                 'scp_type': DATA_TYPE['contest-archive'],
-                'creator': tds[1].text()
+                'creator': tds[1].text(),
+                'index': index
             }
+            index += 1
             contest_list.append(ScpContestItem(new_contest))
         else:
             current_contest_name = last_contest_name
@@ -181,6 +201,7 @@ def parse_contest_list_html(pq_doc):
 def parse_contest_cn_html(pq_doc):
     contest_list = []
     h3_list = list(pq_doc('div#main-content h3').items())
+    index = 0
     for i in range(len(h3_list)):
         h3 = h3_list[i]
         contest_a = list(h3('a').items())[0]
@@ -190,8 +211,10 @@ def parse_contest_cn_html(pq_doc):
             'title': contest_a.text(),
             'link': contest_a.attr('href'),
             'scp_type': DATA_TYPE['contest-archive-cn'],
-            'creator': list(current_holder('a').items())[1].text()
+            'creator': list(current_holder('a').items())[1].text(),
+            'index': index
         }
+        index += 1
         contest_list.append(ScpContestItem(new_contest))
         # for a in current_holder.siblings('a').items():
         #     new_article = {
@@ -206,9 +229,10 @@ def parse_contest_cn_html(pq_doc):
         #     contest_list.append(ScpContestArticleItem(new_article))
     return contest_list
 
-
+story_index = 0
 def parse_story_series_html(pq_doc, scp_type):
     story_series_list = []
+    global story_index
     for tr in list(pq_doc('div.list-pages-box tr').items())[1:]:
         tds = list(tr('td').items())
         new_article = {
@@ -216,8 +240,10 @@ def parse_story_series_html(pq_doc, scp_type):
             'link': tds[0]('a').attr('href'),
             'author': tds[1].text(),
             'snippet': tds[2].text(),
-            'scp_type': scp_type
+            'scp_type': scp_type,
+            'index': story_index
         }
+        story_index += 1
         story_series_list.append(ScpStorySeriesItem(new_article))
     return story_series_list
 
@@ -225,6 +251,7 @@ def parse_story_series_html(pq_doc, scp_type):
 # articles in content page
 def parse_collection_item_html(pq_doc, scp_type):
     content_article_list = []
+    index = 0
     for elm_a in list(pq_doc('div#page-content a').items()):
         link = elm_a.attr('href')
         if link is not None and 'forum' not in link \
@@ -235,8 +262,10 @@ def parse_collection_item_html(pq_doc, scp_type):
             new_article = {
                 'title': elm_a.text(),
                 'link': link,
-                'scp_type': scp_type
+                'scp_type': scp_type,
+                'index': index
             }
+            index += 1
             content_article_list.append(ScpContestArticleItem(new_article))
     return content_article_list
 

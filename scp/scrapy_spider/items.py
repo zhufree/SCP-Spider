@@ -13,37 +13,36 @@ class ScpBaseItem(scrapy.Item):
     base info for each item
     """
     # base info
+    index = scrapy.Field()
     link = scrapy.Field()
     title = scrapy.Field()
     scp_type = scrapy.Field()
+    sub_scp_type = scrapy.Field()
     # get when scrapy detail
-    detail = scrapy.Field()
-    not_found = scrapy.Field()
     # change by sql query and may change when needed
     download_type = scrapy.Field()
-    tags = scrapy.Field()
 
 
 class ScpTaleItem(ScpBaseItem):
     author = scrapy.Field()
     created_time = scrapy.Field()
-    month = scrapy.Field()
-    page_code = scrapy.Field()
+    # month = scrapy.Field()
+    # page_code = scrapy.Field()
 
 
 # FIXME 竞赛胜出文章
 class ScpContestArticleItem(ScpBaseItem):
     author = scrapy.Field()
-    contest_name = scrapy.Field()
-    contest_link = scrapy.Field()
+    # contest_name = scrapy.Field()
+    # contest_link = scrapy.Field()
 
 
 class ScpContestItem(ScpBaseItem):
     creator = scrapy.Field()
 
 
-class ScpEventItem(ScpBaseItem):
-    event_type = scrapy.Field()
+# class ScpEventItem(ScpBaseItem):
+    # event_type = scrapy.Field()
 
 
 # collection
@@ -69,3 +68,4 @@ class ScpDetailItem(scrapy.Item):
     link = scrapy.Field()
     detail = scrapy.Field()
     not_found = scrapy.Field()
+    tags = scrapy.Field()

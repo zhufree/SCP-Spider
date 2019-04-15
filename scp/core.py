@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .constants import DB_NAME, CREATE_DB_SQL, CREATE_COLLECTION_DB_SQL, CREATE_TAG_DB_SQL
+from .constants import DB_NAME, CREATE_DB_SCP_SQL, CREATE_DB_DETAIL_SQL, CREATE_COLLECTION_DB_SQL, CREATE_TAG_DB_SQL
 import sqlite3
 import os
 from .util import *
@@ -10,7 +10,8 @@ def init_database():
     if not os.path.exists(DB_NAME):
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
-        cur.execute(CREATE_DB_SQL)
+        cur.execute(CREATE_DB_SCP_SQL)
+        cur.execute(CREATE_DB_DETAIL_SQL)
         cur.execute(CREATE_COLLECTION_DB_SQL)
         cur.execute(CREATE_TAG_DB_SQL)
         con.commit()
@@ -53,4 +54,3 @@ class ScpSpider:
         con.commit()
         con.close()
 
-# ScpSpider().crawl_main_list()
