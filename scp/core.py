@@ -49,7 +49,7 @@ class ScpSpider:
         cur.execute("update scps set download_type = 1 where scp_type = 2;")
         cur.execute("update scps set download_type = 2 where scp_type in (3,4);")
         cur.execute("update scps set download_type = 3 where scp_type in (0,5,6,7,8,9,10,11,12,21);")
-        cur.execute("update scps set download_type = 4 where scp_type in (16,18,22);")
+        cur.execute("update scps set download_type = 4 where scp_type in (16,18,22,23);")
         cur.execute("update scp_collection set download_type = 4;")
         con.commit()
         con.close()

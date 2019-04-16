@@ -32,7 +32,7 @@ def get_empty_link_for_detail():
     con = sqlite3.connect(DB_NAME)
     cur = con.cursor()
     cur.execute('select link from scp_detail where detail is NULL;')
-    link_list = [t[0] for t in cur]
+    link_list = [t[0] for t in cur if 'forum' not in t]
     con.close()
     return link_list
 
@@ -57,23 +57,7 @@ def get_all_link_by_download_type(download_type):
     return link_list
     # return ['/scp-cn-1000']
 
-def get_collection_link():
-    # 设定中心
-    # 'canon-hub': 13,
-    # 'canon-hub-cn': 14,
-    # 竞赛
-    # 'contest-archive': 15,
-    # 中分竞赛
-    # 'contest-archive-cn': 17,
-    # 故事系列
-    # 'series-archive': 19,
-    # 'series-archive-cn': 20,
-    con = sqlite3.connect(DB_NAME)
-    cur = con.cursor()
-    cur.execute('select link from scp_collection where scp_type = 17;')
-    link_list = [t[0] for t in cur]
-    con.close()
-    return link_list
+
 
 def get_canon_link():
     con = sqlite3.connect(DB_NAME)
@@ -91,7 +75,7 @@ class ScpListSpider(scrapy.Spider):
     name = "main_list_spider"
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
-    # 为了防止中途失败，尽量分割成小部分抓取
+    # 页面不多可以一次抓完
     # SERIES_ENDPOINTS # 5
     # SERIES_CN_ENDPOINTS # 2
     item_list_urls =  list(ENDPOINTS.values()) + REPORT_ENDPOINTS
@@ -114,11 +98,13 @@ class ScpSinglePageSpider(scrapy.Spider):
     name = "single_page_spider"
     allowed_domains = 'scp-wiki-cn.wikidot.com'
     start_urls = SINGLE_PAGE_ENDPOINTS
+    index = 0
 
     def parse(self, response):
         pq_doc = pq(response.body)
-        new_scp = ScpBaseItem(link=response.url[30:], title=pq_doc('div#page-title').text(),
+        new_scp = ScpBaseItem(index=self.index, link=response.url[30:], title=pq_doc('div#page-title').text(),
                               scp_type=DATA_TYPE['single-page'])
+        self.index += 1
         yield new_scp
 
 
@@ -152,7 +138,7 @@ class ScpOffsetSpider(scrapy.Spider):
     allowed_domains = 'scp-wiki-cn.wikidot.com'
     # 根据download_type分一下
     start_urls = [('{_s_}://{_d_}' + link + '/offset/1').format(**URL_PARAMS) for link in
-                  get_all_link_by_download_type(0)]
+                  get_all_link_by_download_type(4)]
     handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
 
     def parse(self, response):
@@ -162,14 +148,27 @@ class ScpOffsetSpider(scrapy.Spider):
             offset_index = int(response.url.split('/')[-1])  # .../scp-xxx/offset/x
             link = response.url[30:]
             title = response.css('div#page-title')[0].css('::text').extract()[0].strip() + '-offset-' + str(offset_index)
-            offset_item = ScpBaseItem(link=link, title=title, scp_type=DATA_TYPE['offset'],
-                                      detail=detail_dom.extract().replace('  ', '').replace('\n', ''), not_found=0)
-            yield offset_item
+            detail_item = ScpDetailItem(link=link,detail=detail_dom.extract().replace('  ', '').replace('\n', ''), not_found=0)
+            yield detail_item
             offset_request = scrapy.Request(response.url[0:-1] + str(offset_index + 1), callback=parse_offset,
                                             headers=HEADERS, dont_filter=True)
             yield offset_request
         # yield detail_item
 
+def parse_offset(response):
+    if response.status != 404 and len(response.css('#page-content .list-pages-box.list-page-item')) > 0:
+        # offset为空不是404，需要判断这个标签内容是不是为空
+        detail_dom = response.css('div#main-content')[0]
+        offset_index = int(response.url.split('/')[-1])  # .../scp-xxx/offset/x
+        link = response.url[30:]
+        title = response.css('div#page-title')[0].css('::text').extract()[0].strip() + '-offset-' + str(offset_index)
+        offset_item = ScpBaseItem(index=0, link=link, title=title, scp_type=DATA_TYPE['offset'])
+        detail_item = ScpDetailItem(link=link,detail=detail_dom.extract().replace('  ', '').replace('\n', ''), not_found=0)
+        yield offset_item
+        yield detail_item
+        offset_request = scrapy.Request(response.url[0:-1] + str(offset_index + 1), callback=parse_offset,
+                                        headers=HEADERS, dont_filter=True)
+        yield offset_request
 
 # 抓设定中心/竞赛内容/故事系列页里面的列表
 class ScpCollectionSpider(scrapy.Spider):
@@ -181,12 +180,51 @@ class ScpCollectionSpider(scrapy.Spider):
                   get_canon_link()]
     handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
 
+    def __init__(self, category=None, *args, **kwargs):
+        super(ScpCollectionSpider, self).__init__(*args, **kwargs)
+        self.con = sqlite3.connect(DB_NAME)
+        self.cur = self.con.cursor()
+
+    def close(self, reason):
+        super(ScpCollectionSpider, self).close(reason=reason)
+        self.con.close()
+
     def parse(self, response):
         pq_doc = pq(response.body)
-        item_list = parse_html(pq_doc, DATA_TYPE['canon_item'])
+        scp_type = self.get_type_by_url(response.url[30:])
+        print('scpType = ' + str(scp_type))
+        if scp_type == 13 or scp_type == 14:
+            sub_item_type = 22
+        elif scp_type == 19 or scp_type == 20:
+            sub_item_type = 23
+        else:
+            sub_item_type = scp_type + 1
+        print('sub_item_type = ' + str(sub_item_type))
+        item_list = parse_html(pq_doc, sub_item_type)
         for info in item_list:
-            # print(info)
             yield info
+
+    def get_type_by_url(self, link):
+        print(link)
+        self.cur.execute('''select scp_type from scp_collection where link = ?''', (link,))
+        scp_type = [t[0] for t in self.cur][0]
+        return scp_type
+
+    def get_collection_link():
+        # 设定中心
+        # 'canon-hub': 13,
+        # 'canon-hub-cn': 14,
+        # 竞赛
+        # 'contest-archive': 15,
+        # 中分竞赛
+        # 'contest-archive-cn': 17,
+        # 故事系列
+        # 'series-archive': 19,
+        # 'series-archive-cn': 20,
+        self.cur.execute('select link from scp_collection;')
+        link_list = [t[0] for t in cur]
+        con.close()
+        return link_list
 
 
 class ScpTagSpider(scrapy.Spider):  # 需要继承scrapy.Spider类
@@ -221,16 +259,4 @@ def parse_tag(response):
         yield new_article
 
 
-def parse_offset(response):
-    if response.status != 404 and len(response.css('#page-content .list-pages-box.list-page-item')) > 0:
-        # offset为空不是404，需要判断这个标签内容是不是为空
-        detail_dom = response.css('div#main-content')[0]
-        offset_index = int(response.url.split('/')[-1])  # .../scp-xxx/offset/x
-        link = response.url[30:]
-        title = response.css('div#page-title')[0].css('::text').extract()[0].strip() + '-offset-' + str(offset_index)
-        offset_item = ScpBaseItem(link=link, title=title, scp_type=DATA_TYPE['offset'],
-                                  detail=detail_dom.extract().replace('  ', '').replace('\n', ''), not_found=0)
-        yield offset_item
-        offset_request = scrapy.Request(response.url[0:-1] + str(offset_index + 1), callback=parse_offset,
-                                        headers=HEADERS, dont_filter=True)
-        yield offset_request
+

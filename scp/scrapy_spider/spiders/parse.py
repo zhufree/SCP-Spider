@@ -27,7 +27,7 @@ def parse_html(pq_doc, scp_type):
     elif scp_type == DATA_TYPE['contest-archive-cn']:
         return parse_contest_cn_html(pq_doc)
     elif scp_type == DATA_TYPE['contest-archive-item'] or scp_type == DATA_TYPE['contest-archive-cn-item']\
-            or scp_type == DATA_TYPE['canon_item']:
+            or scp_type == DATA_TYPE['canon_item'] or scp_type == DATA_TYPE['series-archive-item']:
         return parse_collection_item_html(pq_doc, scp_type)
     elif DATA_TYPE['contest-archive-cn-item'] < scp_type <= DATA_TYPE['series-archive-cn']:
         return parse_story_series_html(pq_doc, scp_type)
@@ -40,6 +40,8 @@ def parse_series_html(pq_doc, scp_type):
     for ul in list(pq_doc('div#page-content ul').items())[1:end_index]:
         for li in ul('li').items():
             link = li('a').attr('href')
+            if link == '/1231-warning':
+                link = '/scp-1231'
             link_part = link.split('-')
             index = -1
             if len(link_part) > 1:
@@ -255,7 +257,7 @@ def parse_collection_item_html(pq_doc, scp_type):
     for elm_a in list(pq_doc('div#page-content a').items()):
         link = elm_a.attr('href')
         if link is not None and 'forum' not in link \
-                and not (link.startswith('http') and 'http://scp-wiki-cn.wikidot.com' not in link) \
+                and not ((link.startswith('http') and 'http://scp-wiki-cn.wikidot.com' not in link)) \
                 and 'user:info' not in link\
                 and 'javascript' not in link\
                 and not link.startswith('#'):

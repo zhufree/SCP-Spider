@@ -17,7 +17,7 @@ DB_NAME = '/Users/zhufree/Documents/privateWorkSpace/SCP-Spider/scp/scp.db'
 CREATE_DB_SCP_SQL = '''
 CREATE TABLE [scps](
   [_id] INTEGER PRIMARY KEY AUTOINCREMENT, 
-  [index] INTEGER,
+  [_index] INTEGER,
   [title] TEXT NOT NULL, 
   [link] TEXT NOT NULL, 
   [download_type] INTEGER, 
@@ -40,7 +40,7 @@ CREATE TABLE [scp_detail](
 CREATE_COLLECTION_DB_SQL = """
 CREATE TABLE [scp_collection](
   [_id] INTEGER PRIMARY KEY AUTOINCREMENT, 
-  [index] INTEGER,
+  [_index] INTEGER,
   [title] TEXT NOT NULL, 
   [link] TEXT NOT NULL, 
   [download_type] INTEGER, 
@@ -102,7 +102,8 @@ DATA_TYPE = {
     # 迭代页面
     'offset': 21,
     # 设定item
-    'canon_item': 22
+    'canon_item': 22,
+    'series-archive-item': 23
 }
 
 TALE_LETTER_LIST = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
