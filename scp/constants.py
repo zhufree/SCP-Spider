@@ -36,7 +36,6 @@ CREATE TABLE [scp_collection](
   [link] TEXT NOT NULL, 
   [download_type] INTEGER, 
   [scp_type] INTEGER, 
-  [not_found] INTEGER, 
   [author] TEXT,
   [desc] TEXT, 
   [creator] TEXT,

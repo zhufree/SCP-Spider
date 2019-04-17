@@ -14,6 +14,6 @@ c = ScpSpider()
 # c.crawl_collection_pages()
 # c.set_download_type() # 在offset之前设置download type，然后据此分块抓offset
 # c.crawl_offset_pages()
-c.crawl_main_detail()
+# c.crawl_main_detail()
 # c.set_download_type() # offset抓完之后给offset也设置download_type
-# c.split_csv()
+c.split_csv()

@@ -40,7 +40,7 @@ class ScpSpider:
         os.system('cd scp/scrapy_spider && scrapy crawl collection_spider')
 
     def split_csv(self):
-        split_csv_file('scps.csv')
+        split_csv_file('scp/scp_detail.csv')
 
     def set_download_type(self):
         con = sqlite3.connect(DB_NAME)

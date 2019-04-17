@@ -53,9 +53,7 @@ def write_to_csv(article_list, file_name):
     """
     with open(file_name, 'w+', encoding='utf-8', newline='') as f:
         # 统一header，方便后续合并文件一起上传
-        writer = csv.DictWriter(f, ["ID", "title", "link", "detail", "download_type", "scp_type", "not_found", "author",
-                                    "created_time", "month", "event_type", "page_code", "tags", "contest_name",
-                                    "contest_link"])
+        writer = csv.DictWriter(f, ["link", "not_found", "detail","tags"])
         writer.writeheader()
         writer.writerows(article_list)
 
@@ -81,13 +79,13 @@ def split_csv_file(filename):
     :return:
     """
     all_scp = get_scp_from_file(filename)
-    # 4000一组
+    # 6000一组
     for i in range(0, 2):
         if i * 6000 + 6000 > len(all_scp):
             scp_group = all_scp[i * 6000:]
         else:
             scp_group = all_scp[i * 6000: i * 6000 + 6000]
-        write_to_csv(scp_group, "split-" + str(i) + "-" + filename)
+        write_to_csv(scp_group, "scp/split-" + str(i) + "-detail.csv")
 
 
 def update_tag_by_db(filename, db_filename):

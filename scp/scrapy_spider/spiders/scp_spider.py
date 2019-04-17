@@ -82,7 +82,7 @@ class ScpListSpider(scrapy.Spider):
     collection_list_url = list(COLLECTION_ENDPOINTS.values()) \
                           + SERIES_STORY_ENDPOINTS
 
-    start_urls = SERIES_ENDPOINTS + SERIES_CN_ENDPOINTS + item_list_urls + collection_list_url
+    start_urls = collection_list_url
 
     def parse(self, response):
         pq_doc = pq(response.body)
@@ -121,10 +121,21 @@ class ScpDetailSpider(scrapy.Spider):
         if response.status != 404:
             detail_dom = response.css('div#page-content')[0]
             link = response.url[30:]
+            extra_detail_item = None
             if link == '/taboo':
                 link = '/scp-4000'
+            if link == '/numbered':
+                link = '/scp-cn-1100'
+            if link == '/scp-179/':
+                extra_detail_item = ScpDetailItem(link='/scp-es-026',
+                                        detail=detail_dom.extract().replace('  ', '').replace('\n', ''), not_found=0)
+            if link == '/scp-2522':
+                extra_detail_item = ScpDetailItem(link='/SCP-2522',
+                                        detail=detail_dom.extract().replace('  ', '').replace('\n', ''), not_found=0)
             detail_item = ScpDetailItem(link=link,
                                         detail=detail_dom.extract().replace('  ', '').replace('\n', ''), not_found=0)
+            if extra_detail_item is not None:
+                yield extra_detail_item
         else:
             detail_item = ScpDetailItem(link=response.url[30:], detail="<h3>抱歉，该页面尚无内容</h3>", not_found=1)
         yield detail_item
