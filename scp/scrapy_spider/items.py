@@ -69,3 +69,4 @@ class ScpDetailItem(scrapy.Item):
     detail = scrapy.Field()
     not_found = scrapy.Field()
     tags = scrapy.Field()
+    download_type = scrapy.Field()

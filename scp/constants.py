@@ -24,6 +24,7 @@ CREATE TABLE [scp_detail](
   [link] TEXT PRIMARY KEY UNIQUE, 
   [not_found] INTEGER, 
   [detail] TEXT, 
+  [download_type] INTEGER, 
   [tags] TEXT);
 '''
 
