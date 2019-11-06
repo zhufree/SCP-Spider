@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from .constants import DB_NAME, CREATE_DB_SCP_SQL, CREATE_DB_DETAIL_SQL, CREATE_COLLECTION_DB_SQL, CREATE_TAG_DB_SQL
-import sqlite3
-import os
+from .db_constants import DB_NAME, CREATE_DB_SCP_SQL, CREATE_DB_DETAIL_SQL, CREATE_COLLECTION_DB_SQL, CREATE_TAG_DB_SQL
 from .util import *
 
 
+# 初始化数据库
 def init_database():
     if not os.path.exists(DB_NAME):
         con = sqlite3.connect(DB_NAME)
@@ -23,37 +22,21 @@ class ScpSpider:
         # init database file
         init_database()
 
-    def crawl_main_list(self):
-        # use scrapy crawl scp list and save in db
-        os.system('cd scp/scrapy_spider && scrapy crawl main_list_spider')
+    def crawl_this_spider(self, spider_name):
+        os.system('cd scp/scrapy_spider && scrapy crawl ' + spider_name)
 
-    def crawl_main_detail(self):
-        os.system('cd scp/scrapy_spider && scrapy crawl detail_spider')
-
-    def crawl_single_pages(self):
-        os.system('cd scp/scrapy_spider && scrapy crawl single_page_spider')
-
-    def crawl_offset_pages(self):
-        os.system('cd scp/scrapy_spider && scrapy crawl offset_spider')
-
-    def crawl_collection_pages(self):
-        os.system('cd scp/scrapy_spider && scrapy crawl collection_spider')
-
-    def split_csv(self):
-        split_csv_file('scp/scp_detail.csv')
-
-    def set_download_type(self):
-        con = sqlite3.connect(DB_NAME)
-        cur = con.cursor()
-        cur.execute("update scps set download_type = 0 where scp_type = 1;")
-        cur.execute("update scps set download_type = 1 where scp_type = 2;")
-        cur.execute("update scps set download_type = 2 where scp_type in (3,4);")
-        cur.execute("update scps set download_type = 3 where scp_type in (0,5,6,7,8,9,10,11,12,21);")
-        cur.execute("update scps set download_type = 4 where scp_type in (16,18,22,23);")
-        cur.execute("update scp_collection set download_type = 4;")
-        # 设置scp_detail的download_type
-        # cur.execute("UPDATE scp_detail SET download_type = ( SELECT download_type FROM scp_collection WHERE scp_detail.link=scp_collection.link)WHERE link in ( SELECT link FROM scp_collection);")
-        # cur.execute("UPDATE scp_detail SET download_type = ( SELECT download_type FROM scps WHERE scp_detail.link=scps.link)WHERE link in ( SELECT link FROM scps);")
-        con.commit()
-        con.close()
-
+    # def crawl_main_list(self):
+    #     # use scrapy crawl scp list and save in db
+    #     os.system('cd scp/scrapy_spider && scrapy crawl main_list_spider')
+    #
+    # def crawl_main_detail(self):
+    #     os.system('cd scp/scrapy_spider && scrapy crawl detail_spider')
+    #
+    # def crawl_single_pages(self):
+    #     os.system('cd scp/scrapy_spider && scrapy crawl single_page_spider')
+    #
+    # def crawl_offset_pages(self):
+    #     os.system('cd scp/scrapy_spider && scrapy crawl offset_spider')
+    #
+    # def crawl_collection_pages(self):
+    #     os.system('cd scp/scrapy_spider && scrapy crawl collection_spider')

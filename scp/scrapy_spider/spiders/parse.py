@@ -8,7 +8,7 @@ from ..items import *
 def get_tale_year_by_time(time):
     year = time.split(' ')[2]
     month = time.split(' ')[1]
-    return year+month
+    return year + month
 
 
 def parse_html(pq_doc, scp_type):
@@ -26,11 +26,13 @@ def parse_html(pq_doc, scp_type):
         return parse_contest_list_html(pq_doc)
     elif scp_type == DATA_TYPE['contest-archive-cn']:
         return parse_contest_cn_html(pq_doc)
-    elif scp_type == DATA_TYPE['contest-archive-item'] or scp_type == DATA_TYPE['contest-archive-cn-item']\
+    elif scp_type == DATA_TYPE['contest-archive-item'] or scp_type == DATA_TYPE['contest-archive-cn-item'] \
             or scp_type == DATA_TYPE['canon_item'] or scp_type == DATA_TYPE['series-archive-item']:
         return parse_collection_item_html(pq_doc, scp_type)
     elif DATA_TYPE['contest-archive-cn-item'] < scp_type <= DATA_TYPE['series-archive-cn']:
         return parse_story_series_html(pq_doc, scp_type)
+    elif scp_type == DATA_TYPE['scp-international']:
+        return parse_international_page(pq_doc)
 
 
 # scp系列
@@ -96,6 +98,8 @@ def parse_archives_html(pq_doc, scp_type):
 
 
 report_index = 0
+
+
 def parse_report_html(pq_doc):
     global report_index
     item_list = []
@@ -231,7 +235,10 @@ def parse_contest_cn_html(pq_doc):
         #     contest_list.append(ScpContestArticleItem(new_article))
     return contest_list
 
+
 story_index = 0
+
+
 def parse_story_series_html(pq_doc, scp_type):
     story_series_list = []
     global story_index
@@ -258,8 +265,8 @@ def parse_collection_item_html(pq_doc, scp_type):
         link = elm_a.attr('href')
         if link is not None and 'forum' not in link \
                 and not ((link.startswith('http') and 'http://scp-wiki-cn.wikidot.com' not in link)) \
-                and 'user:info' not in link\
-                and 'javascript' not in link\
+                and 'user:info' not in link \
+                and 'javascript' not in link \
                 and not link.startswith('#'):
             new_article = {
                 'title': elm_a.text(),
@@ -272,3 +279,48 @@ def parse_collection_item_html(pq_doc, scp_type):
     return content_article_list
 
 
+def parse_international_page(pq_doc):
+    international_list = []
+    index = 0
+    for i in range(0, 13):
+        print('i = ' + str(i))
+        country_code = ''
+        parse_path = 'div#wiki-tab-0-%s h1' % (str(i))
+        for h1 in list(pq_doc(parse_path).items()):
+            content_type = ''
+            if h1.text() == 'SCP系列':
+                content_type = 'series'
+            elif h1.text() == '搞笑SCP系列':
+                content_type = 'joke'
+            elif h1.text() == '被归档SCP系列':
+                content_type = 'arc'
+            elif h1.text() == '故事':
+                content_type = 'tale'
+            elif h1.text() == '其他':
+                content_type = 'other'
+
+            # 有些h1跟着ul
+            for li in list(h1.next('ul').items()):
+                new_article = {
+                    'title': li.text(),
+                    'link': li('a').attr('href'),
+                    'scp_type': DATA_TYPE['scp-international'],
+                    'sub_scp_type': country_code + ':' + content_type,
+                    'index': index
+                }
+                print(new_article)
+                international_list.append(ScpBaseItem(new_article))
+                index += 1
+            # 有些h1跟着div.list-pages-box再套着ul
+            for li in list(h1.next('div.list-pages-box')('ul').items()):
+                new_article = {
+                    'title': li.text(),
+                    'link': li('a').attr('href'),
+                    'scp_type': DATA_TYPE['scp-international'],
+                    'sub_scp_type': country_code + ':' + content_type,
+                    'index': index
+                }
+                print(new_article)
+                international_list.append(ScpBaseItem(new_article))
+                index += 1
+    return international_list

@@ -71,7 +71,7 @@ class ScpListSpider(scrapy.Spider):
     """
     抓取scp列表
     """
-    name = "main_list_spider"
+    name = "main"
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
     # 页面不多可以一次抓完
@@ -82,6 +82,7 @@ class ScpListSpider(scrapy.Spider):
                           + SERIES_STORY_ENDPOINTS
 
     start_urls = SERIES_ENDPOINTS + SERIES_CN_ENDPOINTS + item_list_urls + collection_list_url
+
     # start_urls = collection_list_url
 
     def parse(self, response):
@@ -91,11 +92,29 @@ class ScpListSpider(scrapy.Spider):
             yield info
 
 
+class ScpTestSpider(scrapy.Spider):
+    """
+    抓取scp列表
+    """
+    name = "test"
+    allowed_domains = 'scp-wiki-cn.wikidot.com'
+
+    start_urls = [ENDPOINTS['scp-international']]
+
+    # start_urls = collection_list_url
+
+    def parse(self, response):
+        pq_doc = pq(response.body)
+        item_list = parse_html(pq_doc, get_type_by_url(response.url))
+        # for info in item_list:
+        #     yield info
+
+
 class ScpSinglePageSpider(scrapy.Spider):
     """
     抓取单页面
     """
-    name = "single_page_spider"
+    name = "single"
     allowed_domains = 'scp-wiki-cn.wikidot.com'
     start_urls = SINGLE_PAGE_ENDPOINTS
     index = 0
@@ -112,7 +131,7 @@ class ScpDetailSpider(scrapy.Spider):
     """
     根据链接抓取页面内容
     """
-    name = 'detail_spider'
+    name = 'detail'
     allowed_domains = 'scp-wiki-cn.wikidot.com'
     start_urls = [('{_s_}://{_d_}' + link).format(**URL_PARAMS) for link in get_empty_link_for_detail()]
     handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
@@ -128,10 +147,12 @@ class ScpDetailSpider(scrapy.Spider):
                 link = '/scp-cn-1100'
             if link == '/scp-179/':
                 extra_detail_item = ScpDetailItem(link='/scp-es-026',
-                                        detail=detail_dom.extract().replace('  ', '').replace('\n', ''), not_found=0)
+                                                  detail=detail_dom.extract().replace('  ', '').replace('\n', ''),
+                                                  not_found=0)
             if link == '/scp-2522':
                 extra_detail_item = ScpDetailItem(link='/SCP-2522',
-                                        detail=detail_dom.extract().replace('  ', '').replace('\n', ''), not_found=0)
+                                                  detail=detail_dom.extract().replace('  ', '').replace('\n', ''),
+                                                  not_found=0)
             detail_item = ScpDetailItem(link=link,
                                         detail=detail_dom.extract().replace('  ', '').replace('\n', ''), not_found=0)
             if extra_detail_item is not None:
@@ -145,7 +166,7 @@ class ScpOffsetSpider(scrapy.Spider):
     """
     抓offset内容
     """
-    name = 'offset_spider'
+    name = 'offset'
     allowed_domains = 'scp-wiki-cn.wikidot.com'
     # 根据download_type分一下
     start_urls = [('{_s_}://{_d_}' + link + '/offset/1').format(**URL_PARAMS) for link in
@@ -158,13 +179,16 @@ class ScpOffsetSpider(scrapy.Spider):
             detail_dom = response.css('div#page-content')[0]
             offset_index = int(response.url.split('/')[-1])  # .../scp-xxx/offset/x
             link = response.url[30:]
-            title = response.css('div#page-title')[0].css('::text').extract()[0].strip() + '-offset-' + str(offset_index)
-            detail_item = ScpDetailItem(link=link,detail=detail_dom.extract().replace('  ', '').replace('\n', ''), not_found=0)
+            title = response.css('div#page-title')[0].css('::text').extract()[0].strip() + '-offset-' + str(
+                offset_index)
+            detail_item = ScpDetailItem(link=link, detail=detail_dom.extract().replace('  ', '').replace('\n', ''),
+                                        not_found=0)
             yield detail_item
             offset_request = scrapy.Request(response.url[0:-1] + str(offset_index + 1), callback=parse_offset,
                                             headers=HEADERS, dont_filter=True)
             yield offset_request
         # yield detail_item
+
 
 def parse_offset(response):
     if response.status != 404 and len(response.css('#page-content .list-pages-box.list-page-item')) > 0:
@@ -174,17 +198,18 @@ def parse_offset(response):
         link = response.url[30:]
         title = response.css('div#page-title')[0].css('::text').extract()[0].strip() + '-offset-' + str(offset_index)
         offset_item = ScpBaseItem(index=0, link=link, title=title, scp_type=DATA_TYPE['offset'])
-        detail_item = ScpDetailItem(link=link,detail=detail_dom.extract().replace('  ', '').replace('\n', ''), not_found=0)
+        detail_item = ScpDetailItem(link=link, detail=detail_dom.extract().replace('  ', '').replace('\n', ''),
+                                    not_found=0)
         yield offset_item
         yield detail_item
         offset_request = scrapy.Request(response.url[0:-1] + str(offset_index + 1), callback=parse_offset,
                                         headers=HEADERS, dont_filter=True)
         yield offset_request
 
+
 # 抓设定中心/竞赛内容/故事系列页里面的列表
 class ScpCollectionSpider(scrapy.Spider):
-
-    name = "collection_spider"
+    name = "collection"
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
     start_urls = [('{_s_}://{_d_}' + link).format(**URL_PARAMS) for link in
@@ -252,6 +277,3 @@ def parse_tag(response):
             tags=tag_name,
         )
         yield new_article
-
-
-

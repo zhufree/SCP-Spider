@@ -35,7 +35,6 @@ CREATE TABLE [scp_detail](
   [tags] TEXT);
 '''
 
-
 CREATE_COLLECTION_DB_SQL = """
 CREATE TABLE [scp_collection](
   [_id] INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -101,7 +100,8 @@ DATA_TYPE = {
     'offset': 21,
     # 设定item
     'canon_item': 22,
-    'series-archive-item': 23
+    'series-archive-item': 23,
+    'scp-international': 24
 }
 
 TALE_LETTER_LIST = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
@@ -165,6 +165,7 @@ ENDPOINTS = {
     'scp-ex-cn': '{_s_}://{_d_}/scp-ex-cn'.format(**URL_PARAMS),
     'decommissioned-scps': '{_s_}://{_d_}/decommissioned-scps-arc'.format(**URL_PARAMS),
     'scp-removed': '{_s_}://{_d_}/scp-removed'.format(**URL_PARAMS),
+    'scp-international': '{_s_}://{_d_}/scp-international'.format(**URL_PARAMS)
 }
 
 REVERSE_ENDPOINTS = dict(zip(ENDPOINTS.values(), ENDPOINTS.keys()))
