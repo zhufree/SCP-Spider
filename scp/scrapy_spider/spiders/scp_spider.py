@@ -58,12 +58,11 @@ def get_all_link_by_download_type(download_type):
     # return ['/scp-cn-1000']
 
 
-
-def get_canon_link():
+def get_collection_item_link():
     con = sqlite3.connect(DB_NAME)
     cur = con.cursor()
-    cur.execute('select link from scp_collection where scp_type in (13,14);')
-    link_list = [t[0] for t in cur]
+    cur.execute('select link from scp_collection;')
+    link_list = [t[0] for t in cur if 'forum' not in t]
     con.close()
     return link_list
 
@@ -78,11 +77,12 @@ class ScpListSpider(scrapy.Spider):
     # 页面不多可以一次抓完
     # SERIES_ENDPOINTS # 5
     # SERIES_CN_ENDPOINTS # 2
-    item_list_urls =  list(ENDPOINTS.values()) + REPORT_ENDPOINTS
+    item_list_urls = list(ENDPOINTS.values()) + REPORT_ENDPOINTS
     collection_list_url = list(COLLECTION_ENDPOINTS.values()) \
                           + SERIES_STORY_ENDPOINTS
 
-    start_urls = collection_list_url
+    start_urls = SERIES_ENDPOINTS + SERIES_CN_ENDPOINTS + item_list_urls + collection_list_url
+    # start_urls = collection_list_url
 
     def parse(self, response):
         pq_doc = pq(response.body)
@@ -188,7 +188,7 @@ class ScpCollectionSpider(scrapy.Spider):
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
     start_urls = [('{_s_}://{_d_}' + link).format(**URL_PARAMS) for link in
-                  get_canon_link()]
+                  get_collection_item_link()]
     handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
 
     def __init__(self, category=None, *args, **kwargs):
@@ -197,7 +197,7 @@ class ScpCollectionSpider(scrapy.Spider):
         self.cur = self.con.cursor()
 
     def close(self, reason):
-        super(ScpCollectionSpider, self).close(reason=reason)
+        super(ScpCollectionSpider, self).close(self, reason=reason)
         self.con.close()
 
     def parse(self, response):
@@ -220,22 +220,6 @@ class ScpCollectionSpider(scrapy.Spider):
         self.cur.execute('''select scp_type from scp_collection where link = ?''', (link,))
         scp_type = [t[0] for t in self.cur][0]
         return scp_type
-
-    def get_collection_link():
-        # 设定中心
-        # 'canon-hub': 13,
-        # 'canon-hub-cn': 14,
-        # 竞赛
-        # 'contest-archive': 15,
-        # 中分竞赛
-        # 'contest-archive-cn': 17,
-        # 故事系列
-        # 'series-archive': 19,
-        # 'series-archive-cn': 20,
-        self.cur.execute('select link from scp_collection;')
-        link_list = [t[0] for t in cur]
-        con.close()
-        return link_list
 
 
 class ScpTagSpider(scrapy.Spider):  # 需要继承scrapy.Spider类

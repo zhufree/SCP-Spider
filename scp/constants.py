@@ -1,5 +1,4 @@
-# DB_NAME = 'E:\\SCP-Spider\\scp\\scp.db'
-DB_NAME = '/Users/zhufree/Documents/privateWorkSpace/SCP-Spider/scp/scp.db'
+DB_NAME = 'E:\\SCP-Spider\\scp\\scp.db'
 # 先不用这两个字段
 # [contest_name] TEXT, 
 # [contest_link] TEXT
@@ -24,7 +23,6 @@ CREATE TABLE [scp_detail](
   [link] TEXT PRIMARY KEY UNIQUE, 
   [not_found] INTEGER, 
   [detail] TEXT, 
-  [download_type] INTEGER, 
   [tags] TEXT);
 '''
 

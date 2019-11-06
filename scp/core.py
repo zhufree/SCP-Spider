@@ -52,8 +52,8 @@ class ScpSpider:
         cur.execute("update scps set download_type = 4 where scp_type in (16,18,22,23);")
         cur.execute("update scp_collection set download_type = 4;")
         # 设置scp_detail的download_type
-        cur.execute("UPDATE scp_detail SET download_type = ( SELECT download_type FROM scp_collection WHERE scp_detail.link=scp_collection.link)WHERE link in ( SELECT link FROM scp_collection);")
-        cur.execute("UPDATE scp_detail SET download_type = ( SELECT download_type FROM scps WHERE scp_detail.link=scps.link)WHERE link in ( SELECT link FROM scps);")
+        # cur.execute("UPDATE scp_detail SET download_type = ( SELECT download_type FROM scp_collection WHERE scp_detail.link=scp_collection.link)WHERE link in ( SELECT link FROM scp_collection);")
+        # cur.execute("UPDATE scp_detail SET download_type = ( SELECT download_type FROM scps WHERE scp_detail.link=scps.link)WHERE link in ( SELECT link FROM scps);")
         con.commit()
         con.close()
 
