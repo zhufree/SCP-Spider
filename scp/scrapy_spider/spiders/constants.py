@@ -6,7 +6,8 @@ HEADERS = {
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
 }
 
-DB_NAME = 'E:\\SCP-Spider\\scp\\scp.db'
+DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\scp.db'
+TEST_DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\test_scp.db'
 
 # 先不用这两个字段
 # [contest_name] TEXT, 

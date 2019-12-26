@@ -2,7 +2,8 @@
 
 from .core import ScpSpider
 import sys
-#
+
+# python -m scp test
 options = sys.argv[1:]
 c = ScpSpider()
 if not {'main', 'single', 'offset', 'collection', 'test'} & set(options):

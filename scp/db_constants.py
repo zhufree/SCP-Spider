@@ -1,4 +1,5 @@
-DB_NAME = 'E:\\SCP-Spider\\scp\\scp.db'
+DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\scp.db'
+TEST_DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\test_scp.db'
 # 先不用这两个字段
 # [contest_name] TEXT, 
 # [contest_link] TEXT

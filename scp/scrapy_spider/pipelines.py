@@ -4,7 +4,7 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import sqlite3
-from .spiders.constants import DB_NAME, DATA_TYPE
+from .spiders.constants import DB_NAME, TEST_DB_NAME, DATA_TYPE
 from .items import *
 
 
@@ -56,8 +56,8 @@ def write_to_db(cur, scp_item):
                          scp_item['snippet'], scp_item['subtext'],))
         elif type(scp_item) == ScpBaseItem:
             print(scp_item['title'])
-            cur.execute('''insert into scps (_index, title, link, scp_type) values (?,?,?,?)''',
-                            (scp_item['index'], scp_item['title'], link, scp_item['scp_type'],))
+            cur.execute('''insert into scps (_index, title, link, scp_type, sub_scp_type) values (?,?,?,?,?)''',
+                            (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['sub_scp_type'],))
 
     except Exception as e:
         print(e)
@@ -74,7 +74,8 @@ def update_detail_in_db(cur, detail_item):
 class ScpSpiderPipeline(object):
 
     def open_spider(self, spider):
-        self.con = sqlite3.connect(DB_NAME)
+        # self.con = sqlite3.connect(DB_NAME)
+        self.con = sqlite3.connect(TEST_DB_NAME)
         self.cur = self.con.cursor()
 
     def close_spider(self, spider):

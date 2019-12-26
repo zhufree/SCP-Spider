@@ -280,12 +280,14 @@ def parse_collection_item_html(pq_doc, scp_type):
 
 
 def parse_international_page(pq_doc):
+    """ 国际版 """
     international_list = []
     index = 0
     for i in range(0, 13):
         print('i = ' + str(i))
-        country_code = ''
         parse_path = 'div#wiki-tab-0-%s h1' % (str(i))
+        country_code = list(pq_doc('ul.yui-nav li a em').items())[i].text()
+        print(country_code)
         for h1 in list(pq_doc(parse_path).items()):
             content_type = ''
             if h1.text() == 'SCP系列':
@@ -299,20 +301,21 @@ def parse_international_page(pq_doc):
             elif h1.text() == '其他':
                 content_type = 'other'
 
-            # 有些h1跟着ul
-            for li in list(h1.next('ul').items()):
-                new_article = {
-                    'title': li.text(),
-                    'link': li('a').attr('href'),
-                    'scp_type': DATA_TYPE['scp-international'],
-                    'sub_scp_type': country_code + ':' + content_type,
-                    'index': index
-                }
-                print(new_article)
-                international_list.append(ScpBaseItem(new_article))
-                index += 1
-            # 有些h1跟着div.list-pages-box再套着ul
-            for li in list(h1.next('div.list-pages-box')('ul').items()):
+            # 有些h1跟着ul或多个ul
+            for ul in list(h1.next('ul').items()):
+                for li in list((ul('li')).items()):
+                    new_article = {
+                        'title': li.text(),
+                        'link': li('a').attr('href'),
+                        'scp_type': DATA_TYPE['scp-international'],
+                        'sub_scp_type': country_code + ':' + content_type,
+                        'index': index
+                    }
+                    print(new_article)
+                    international_list.append(ScpBaseItem(new_article))
+                    index += 1
+            # 有些h1跟着div.list-pages-box再套着ul9
+            for li in list(h1.next('div.list-pages-box')('ul li').items()):
                 new_article = {
                     'title': li.text(),
                     'link': li('a').attr('href'),

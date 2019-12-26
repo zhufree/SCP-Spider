@@ -106,8 +106,8 @@ class ScpTestSpider(scrapy.Spider):
     def parse(self, response):
         pq_doc = pq(response.body)
         item_list = parse_html(pq_doc, get_type_by_url(response.url))
-        # for info in item_list:
-        #     yield info
+        for info in item_list:
+            yield info
 
 
 class ScpSinglePageSpider(scrapy.Spider):

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .db_constants import DB_NAME, CREATE_DB_SCP_SQL, CREATE_DB_DETAIL_SQL, CREATE_COLLECTION_DB_SQL, CREATE_TAG_DB_SQL
+from .db_constants import DB_NAME, TEST_DB_NAME, CREATE_DB_SCP_SQL, CREATE_DB_DETAIL_SQL, CREATE_COLLECTION_DB_SQL, CREATE_TAG_DB_SQL
 from .util import *
 
 
@@ -15,6 +15,15 @@ def init_database():
         cur.execute(CREATE_TAG_DB_SQL)
         con.commit()
         con.close()
+    if not os.path.exists(TEST_DB_NAME):
+        test_con = sqlite3.connect(TEST_DB_NAME)
+        test_cur = test_con.cursor()
+        test_cur.execute(CREATE_DB_SCP_SQL)
+        test_cur.execute(CREATE_DB_DETAIL_SQL)
+        test_cur.execute(CREATE_COLLECTION_DB_SQL)
+        test_cur.execute(CREATE_TAG_DB_SQL)
+        test_con.commit()
+        test_con.close()
 
 
 class ScpSpider:
