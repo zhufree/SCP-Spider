@@ -283,7 +283,7 @@ def parse_international_page(pq_doc):
     """ 国际版 """
     international_list = []
     index = 0
-    for i in range(0, 13):
+    for i in range(12, 13):
         print('i = ' + str(i))
         parse_path = 'div#wiki-tab-0-%s h1' % (str(i))
         country_code = list(pq_doc('ul.yui-nav li a em').items())[i].text()
@@ -301,8 +301,10 @@ def parse_international_page(pq_doc):
             elif h1.text() == '其他':
                 content_type = 'other'
 
-            # 有些h1跟着ul或多个ul
-            for ul in list(h1.next('ul').items()):
+            # TODO 有些h1跟着ul或多个ul
+            ul_list = list(h1.siblings('ul').items())
+            # if len(ul_list) == 1:
+            for ul in list(h1.siblings('ul').items()):
                 for li in list((ul('li')).items()):
                     new_article = {
                         'title': li.text(),
