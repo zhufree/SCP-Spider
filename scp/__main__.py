@@ -6,8 +6,8 @@ import sys
 # python -m scp test
 options = sys.argv[1:]
 c = ScpSpider()
-if not {'main', 'single', 'offset', 'collection', 'test'} & set(options):
-    print('Please provide a notification option: "news" or "follow"')
+if not {'main', 'single', 'offset', 'collection', 'international', 'detail', 'test'} & set(options):
+    print('Please provide a notification option')
     sys.exit(0)
 else:
     c.crawl_this_spider(options[0])

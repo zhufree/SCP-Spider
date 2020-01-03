@@ -57,7 +57,7 @@ def write_to_db(cur, scp_item):
         elif type(scp_item) == ScpBaseItem:
             print(scp_item['title'])
             cur.execute('''insert into scps (_index, title, link, scp_type, sub_scp_type) values (?,?,?,?,?)''',
-                            (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['sub_scp_type'],))
+                        (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['sub_scp_type'],))
 
     except Exception as e:
         print(e)
@@ -74,8 +74,8 @@ def update_detail_in_db(cur, detail_item):
 class ScpSpiderPipeline(object):
 
     def open_spider(self, spider):
-        # self.con = sqlite3.connect(DB_NAME)
-        self.con = sqlite3.connect(TEST_DB_NAME)
+        self.con = sqlite3.connect(DB_NAME)
+        # self.con = sqlite3.connect(TEST_DB_NAME)
         self.cur = self.con.cursor()
 
     def close_spider(self, spider):

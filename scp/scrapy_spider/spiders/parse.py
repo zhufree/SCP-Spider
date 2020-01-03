@@ -283,29 +283,32 @@ def parse_international_page(pq_doc):
     """ 国际版 """
     international_list = []
     index = 0
-    for i in range(12, 13):
-        print('i = ' + str(i))
-        parse_path = 'div#wiki-tab-0-%s h1' % (str(i))
+    for i in range(0, 13):
         country_code = list(pq_doc('ul.yui-nav li a em').items())[i].text()
-        print(country_code)
-        for h1 in list(pq_doc(parse_path).items()):
-            content_type = ''
-            if h1.text() == 'SCP系列':
-                content_type = 'series'
-            elif h1.text() == '搞笑SCP系列':
-                content_type = 'joke'
-            elif h1.text() == '被归档SCP系列':
-                content_type = 'arc'
-            elif h1.text() == '故事':
-                content_type = 'tale'
-            elif h1.text() == '其他':
-                content_type = 'other'
-
-            # TODO 有些h1跟着ul或多个ul
-            ul_list = list(h1.siblings('ul').items())
-            # if len(ul_list) == 1:
-            for ul in list(h1.siblings('ul').items()):
-                for li in list((ul('li')).items()):
+        # 列出 div#wiki-tab-0-%s 下的所有子元素
+        # 遍历 h1标记为content_type
+        # h1后面接的ul直到下一个h1
+        # 或h1跟着div.list-pages-box再套着ul
+        tab_item_list = list(pq_doc('div#wiki-tab-0-%s>*' % (str(i))).items())
+        content_type = ''
+        for j in range(0, len(tab_item_list)):
+            current_item = tab_item_list[j]
+            if current_item.is_('h1'):
+                current_h1 = current_item
+                print(current_item)
+                if current_h1.text() == 'SCP系列':
+                    content_type = 'series'
+                elif current_h1.text() == '搞笑SCP系列':
+                    content_type = 'joke'
+                elif current_h1.text() == '被归档SCP系列':
+                    content_type = 'arc'
+                elif current_h1.text() == '故事':
+                    content_type = 'tale'
+                elif current_h1.text() == '其他':
+                    content_type = 'other'
+            elif current_item.is_('ul'):
+                current_ul = current_item
+                for li in list((current_ul('li')).items()):
                     new_article = {
                         'title': li.text(),
                         'link': li('a').attr('href'),
@@ -316,16 +319,16 @@ def parse_international_page(pq_doc):
                     print(new_article)
                     international_list.append(ScpBaseItem(new_article))
                     index += 1
-            # 有些h1跟着div.list-pages-box再套着ul9
-            for li in list(h1.next('div.list-pages-box')('ul li').items()):
-                new_article = {
-                    'title': li.text(),
-                    'link': li('a').attr('href'),
-                    'scp_type': DATA_TYPE['scp-international'],
-                    'sub_scp_type': country_code + ':' + content_type,
-                    'index': index
-                }
-                print(new_article)
-                international_list.append(ScpBaseItem(new_article))
-                index += 1
+            elif current_item.is_('.list-pages-box'):
+                for li in list(current_item('ul li').items()):
+                    new_article = {
+                        'title': li.text(),
+                        'link': li('a').attr('href'),
+                        'scp_type': DATA_TYPE['scp-international'],
+                        'sub_scp_type': country_code + ':' + content_type,
+                        'index': index
+                    }
+                    print(new_article)
+                    international_list.append(ScpBaseItem(new_article))
+                    index += 1
     return international_list

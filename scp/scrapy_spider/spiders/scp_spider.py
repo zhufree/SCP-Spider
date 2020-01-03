@@ -92,11 +92,11 @@ class ScpListSpider(scrapy.Spider):
             yield info
 
 
-class ScpTestSpider(scrapy.Spider):
+class ScpInternationalSpider(scrapy.Spider):
     """
     抓取scp列表
     """
-    name = "test"
+    name = "international"
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
     start_urls = [ENDPOINTS['scp-international']]
@@ -179,8 +179,6 @@ class ScpOffsetSpider(scrapy.Spider):
             detail_dom = response.css('div#page-content')[0]
             offset_index = int(response.url.split('/')[-1])  # .../scp-xxx/offset/x
             link = response.url[30:]
-            title = response.css('div#page-title')[0].css('::text').extract()[0].strip() + '-offset-' + str(
-                offset_index)
             detail_item = ScpDetailItem(link=link, detail=detail_dom.extract().replace('  ', '').replace('\n', ''),
                                         not_found=0)
             yield detail_item
