@@ -44,6 +44,8 @@ def parse_series_html(pq_doc, scp_type):
             link = li('a').attr('href')
             if link == '/1231-warning':
                 link = '/scp-1231'
+            if 'scp-wiki-cn.wikidot.com' in link:
+                link = link[30:]
             link_part = link.split('-')
             index = -1
             if len(link_part) > 1:
@@ -52,6 +54,7 @@ def parse_series_html(pq_doc, scp_type):
                 'title': li.text(),
                 'link': link,
                 'scp_type': scp_type,
+                'sub_scp_type': '',
                 'index': index
             }
             base_info_list.append(ScpBaseItem(new_article))
@@ -86,10 +89,13 @@ def parse_archives_html(pq_doc, scp_type):
         'archived-scps'] else 'div.content-panel>ul>li'
     for li in list(pq_doc(parse_path).items()):
         link = li('a').attr('href')
+        if 'http://scp-wiki-cn.wikidot.com' in link:
+            link = link[30:]
         new_article = {
             'title': li.text(),
             'link': link,
             'scp_type': scp_type,
+            'sub_scp_type': '',
             'index': index
         }
         base_info_list.append(ScpBaseItem(new_article))
@@ -154,6 +160,8 @@ def parse_contest_list_html(pq_doc):
         tds = list(section_tr('td').items())
         current_contest_name = tds[0].text()
         current_contest_link = tds[0]('a').attr('href')
+        if 'http://scp-wiki-cn.wikidot.com' in current_contest_link:
+            current_contest_link = current_contest_link[30:]
         if current_contest_name is not None and len(current_contest_name) > 2:
             last_contest_name = current_contest_name
             last_contest_link = current_contest_link
@@ -264,10 +272,11 @@ def parse_collection_item_html(pq_doc, scp_type):
     for elm_a in list(pq_doc('div#page-content a').items()):
         link = elm_a.attr('href')
         if link is not None and 'forum' not in link \
-                and not ((link.startswith('http') and 'http://scp-wiki-cn.wikidot.com' not in link)) \
                 and 'user:info' not in link \
                 and 'javascript' not in link \
                 and not link.startswith('#'):
+            if 'http://scp-wiki-cn.wikidot.com' in link:
+                link = link[30:]
             new_article = {
                 'title': elm_a.text(),
                 'link': link,
@@ -313,7 +322,7 @@ def parse_international_page(pq_doc):
                         'title': li.text(),
                         'link': li('a').attr('href'),
                         'scp_type': DATA_TYPE['scp-international'],
-                        'sub_scp_type': country_code + ':' + content_type,
+                        'sub_scp_type': country_code + '-' + content_type,
                         'index': index
                     }
                     print(new_article)
@@ -325,7 +334,7 @@ def parse_international_page(pq_doc):
                         'title': li.text(),
                         'link': li('a').attr('href'),
                         'scp_type': DATA_TYPE['scp-international'],
-                        'sub_scp_type': country_code + ':' + content_type,
+                        'sub_scp_type': country_code + '-' + content_type,
                         'index': index
                     }
                     print(new_article)

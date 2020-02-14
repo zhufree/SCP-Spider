@@ -7,7 +7,7 @@ import sys
 options = sys.argv[1:]
 c = ScpSpider()
 if not {'main', 'single', 'offset', 'collection', 'international', 'detail', 'test'} & set(options):
-    print('Please provide a notification option')
+    print('Please provide an option')
     sys.exit(0)
 else:
     c.crawl_this_spider(options[0])

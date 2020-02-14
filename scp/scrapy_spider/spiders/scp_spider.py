@@ -48,10 +48,10 @@ def get_404_link_for_detail():
 
 
 # 根据download_type获取所有link
-def get_all_link_by_download_type(download_type):
+def get_all_link():
     con = sqlite3.connect(DB_NAME)
     cur = con.cursor()
-    cur.execute('select link from scps where download_type = ' + str(download_type) + ';')
+    cur.execute('select link from scps;')
     link_list = [t[0] for t in cur]
     con.close()
     return link_list
@@ -78,10 +78,9 @@ class ScpListSpider(scrapy.Spider):
     # SERIES_ENDPOINTS # 5
     # SERIES_CN_ENDPOINTS # 2
     item_list_urls = list(ENDPOINTS.values()) + REPORT_ENDPOINTS
-    collection_list_url = list(COLLECTION_ENDPOINTS.values()) \
-                          + SERIES_STORY_ENDPOINTS
+    collection_list_url = list(COLLECTION_ENDPOINTS.values()) + SERIES_STORY_ENDPOINTS
 
-    start_urls = SERIES_ENDPOINTS + SERIES_CN_ENDPOINTS + item_list_urls + collection_list_url
+    start_urls = SERIES_CN_ENDPOINTS + SERIES_ENDPOINTS + item_list_urls + collection_list_url
 
     # start_urls = collection_list_url
 
@@ -110,6 +109,24 @@ class ScpInternationalSpider(scrapy.Spider):
             yield info
 
 
+class ScpTestSpider(scrapy.Spider):
+    """
+    抓取scp列表
+    """
+    name = "test"
+    allowed_domains = 'scp-wiki-cn.wikidot.com'
+
+    start_urls = SERIES_CN_ENDPOINTS
+
+    # start_urls = collection_list_url
+
+    def parse(self, response):
+        pq_doc = pq(response.body)
+        item_list = parse_html(pq_doc, get_type_by_url(response.url))
+        for info in item_list:
+            yield info
+
+
 class ScpSinglePageSpider(scrapy.Spider):
     """
     抓取单页面
@@ -122,7 +139,7 @@ class ScpSinglePageSpider(scrapy.Spider):
     def parse(self, response):
         pq_doc = pq(response.body)
         new_scp = ScpBaseItem(index=self.index, link=response.url[30:], title=pq_doc('div#page-title').text(),
-                              scp_type=DATA_TYPE['single-page'])
+                              scp_type=DATA_TYPE['single-page'], sub_scp_type='')
         self.index += 1
         yield new_scp
 
@@ -170,7 +187,7 @@ class ScpOffsetSpider(scrapy.Spider):
     allowed_domains = 'scp-wiki-cn.wikidot.com'
     # 根据download_type分一下
     start_urls = [('{_s_}://{_d_}' + link + '/offset/1').format(**URL_PARAMS) for link in
-                  get_all_link_by_download_type(4)]
+                  get_all_link()]
     handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
 
     def parse(self, response):
