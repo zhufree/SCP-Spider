@@ -32,7 +32,7 @@ def get_empty_link_for_detail():
     con = sqlite3.connect(DB_NAME)
     cur = con.cursor()
     cur.execute('select link from scp_detail where detail is NULL;')
-    link_list = [t[0] for t in cur if 'forum' not in t]
+    link_list = [t[0] for t in cur if 'http' not in t]
     con.close()
     return link_list
 
@@ -82,7 +82,7 @@ class ScpListSpider(scrapy.Spider):
 
     start_urls = SERIES_CN_ENDPOINTS + SERIES_ENDPOINTS + item_list_urls + collection_list_url
 
-    # start_urls = collection_list_url
+    # start_urls = [ENDPOINTS['scp-ex-cn']]  # 漏抓补充
 
     def parse(self, response):
         pq_doc = pq(response.body)
