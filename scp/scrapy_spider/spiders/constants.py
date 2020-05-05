@@ -115,6 +115,7 @@ SERIES_ENDPOINTS = [
     '{_s_}://{_d_}/scp-series-3'.format(**URL_PARAMS),
     '{_s_}://{_d_}/scp-series-4'.format(**URL_PARAMS),
     '{_s_}://{_d_}/scp-series-5'.format(**URL_PARAMS),
+    '{_s_}://{_d_}/scp-series-6'.format(**URL_PARAMS),
 ]
 
 # scp-cn系列目录页面

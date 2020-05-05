@@ -14,7 +14,7 @@ def write_to_db(cur, scp_item):
     """
     try:
         link = scp_item['link']
-        if link is None or 'http://scp-wiki.net/forum/' in link:
+        if len(link) == 1 or ('http' in link and 'http://scp-wiki-cn.wikidot.com' not in link):
             return
         else:
             if 'http://scp-wiki-cn.wikidot.com' in link:

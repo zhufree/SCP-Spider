@@ -116,7 +116,7 @@ class ScpTestSpider(scrapy.Spider):
     name = "test"
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
-    start_urls = SERIES_CN_ENDPOINTS
+    start_urls = [SERIES_ENDPOINTS[5]]
 
     # start_urls = collection_list_url
 
@@ -175,7 +175,7 @@ class ScpDetailSpider(scrapy.Spider):
             if extra_detail_item is not None:
                 yield extra_detail_item
         else:
-            detail_item = ScpDetailItem(link=response.url[30:], detail="<h3>抱歉，该页面尚无内容</h3>", not_found=1)
+            detail_item = ScpDetailItem(link=response.url[30:], detail="null", not_found=1)
         yield detail_item
 
 
