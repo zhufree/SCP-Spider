@@ -1,7 +1,7 @@
 from pyquery import PyQuery as pq
-from .constants import DATA_TYPE, HEADERS, SERIES_ENDPOINTS, SERIES_CN_ENDPOINTS, ENDPOINTS, REVERSE_ENDPOINTS, \
-    SINGLE_PAGE_ENDPOINTS, SERIES_STORY_ENDPOINTS, REPORT_ENDPOINTS, COLLECTION_ENDPOINTS, \
-    REVERSE_COLLECTION_ENDPOINTS, DB_NAME, URL_PARAMS
+from .constants import DATA_TYPE, HEADERS, SERIES_ENDPOINTS, SERIES_CN_ENDPOINTS, LIBRARY_PAGE_ENDPOINTS, ENDPOINTS, \
+    REVERSE_ENDPOINTS, INFO_PAGE_ENDPOINTS, SERIES_STORY_ENDPOINTS, REPORT_ENDPOINTS, DB_NAME, URL_PARAMS, \
+    CN_ANOMALOUS_ITEM_ENDPOINTS, ART_ENDPOINTS
 from ..items import *
 from .parse import parse_html
 import sqlite3
@@ -13,16 +13,20 @@ def get_type_by_url(url):
         return DATA_TYPE['scp-series']
     elif url in SERIES_CN_ENDPOINTS:
         return DATA_TYPE['scp-series-cn']
-    elif url in SINGLE_PAGE_ENDPOINTS:
-        return DATA_TYPE['single-page']
     elif url in SERIES_STORY_ENDPOINTS:
         return DATA_TYPE['series-archive']
+    elif url in LIBRARY_PAGE_ENDPOINTS:
+        return DATA_TYPE['library-single-page']
     elif url in REPORT_ENDPOINTS:
         return DATA_TYPE['reports-interviews-and-logs']
+    elif url in CN_ANOMALOUS_ITEM_ENDPOINTS:
+        return DATA_TYPE['log-of-anomalous-items-cn']
+    elif url in ART_ENDPOINTS:
+        return DATA_TYPE['art']
+    elif url in INFO_PAGE_ENDPOINTS:
+        return DATA_TYPE['info-single-page']
     elif url in ENDPOINTS.values():
         return DATA_TYPE[REVERSE_ENDPOINTS[url]]
-    elif url in COLLECTION_ENDPOINTS.values():
-        return DATA_TYPE[REVERSE_COLLECTION_ENDPOINTS[url]]
     else:
         return -1
 
@@ -62,7 +66,7 @@ def get_collection_item_link():
     con = sqlite3.connect(DB_NAME)
     cur = con.cursor()
     cur.execute('select link from scp_collection;')
-    link_list = [t[0] for t in cur if 'forum' not in t]
+    link_list = [t[0] for t in cur if 'forum' not in t] + ['/scp-001']
     con.close()
     return link_list
 
@@ -75,12 +79,13 @@ class ScpListSpider(scrapy.Spider):
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
     # 页面不多可以一次抓完
-    # SERIES_ENDPOINTS # 5
-    # SERIES_CN_ENDPOINTS # 2
+    # SERIES_ENDPOINTS # 6
+    # SERIES_CN_ENDPOINTS # 3
     item_list_urls = list(ENDPOINTS.values()) + REPORT_ENDPOINTS
     collection_list_url = list(COLLECTION_ENDPOINTS.values()) + SERIES_STORY_ENDPOINTS
 
-    start_urls = SERIES_CN_ENDPOINTS + SERIES_ENDPOINTS + item_list_urls + collection_list_url
+    start_urls = SERIES_CN_ENDPOINTS + SERIES_ENDPOINTS
+                 # + item_list_urls + collection_list_url
 
     # start_urls = [ENDPOINTS['scp-ex-cn']]  # 漏抓补充
 
@@ -91,22 +96,22 @@ class ScpListSpider(scrapy.Spider):
             yield info
 
 
-class ScpInternationalSpider(scrapy.Spider):
-    """
-    抓取scp列表
-    """
-    name = "international"
-    allowed_domains = 'scp-wiki-cn.wikidot.com'
-
-    start_urls = [ENDPOINTS['scp-international']]
-
-    # start_urls = collection_list_url
-
-    def parse(self, response):
-        pq_doc = pq(response.body)
-        item_list = parse_html(pq_doc, get_type_by_url(response.url))
-        for info in item_list:
-            yield info
+# 在main里面抓
+# class ScpInternationalSpider(scrapy.Spider):
+#     """
+#     抓取scp列表
+#     """
+#     name = "international"
+#     allowed_domains = 'scp-wiki-cn.wikidot.com'
+#
+#     start_urls = [ENDPOINTS['scp-international']]
+#
+#
+#     def parse(self, response):
+#         pq_doc = pq(response.body)
+#         item_list = parse_html(pq_doc, get_type_by_url(response.url))
+#         for info in item_list:
+#             yield info
 
 
 class ScpTestSpider(scrapy.Spider):
@@ -116,9 +121,8 @@ class ScpTestSpider(scrapy.Spider):
     name = "test"
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
-    start_urls = [SERIES_ENDPOINTS[5]]
-
-    # start_urls = collection_list_url
+    # start_urls = [SERIES_ENDPOINTS[5]]
+    start_urls = ['http://scp-wiki-cn.wikidot.com/contest-archive']
 
     def parse(self, response):
         pq_doc = pq(response.body)
@@ -133,7 +137,7 @@ class ScpSinglePageSpider(scrapy.Spider):
     """
     name = "single"
     allowed_domains = 'scp-wiki-cn.wikidot.com'
-    start_urls = SINGLE_PAGE_ENDPOINTS
+    start_urls = INFO_PAGE_ENDPOINTS
     index = 0
 
     def parse(self, response):
@@ -224,11 +228,11 @@ def parse_offset(response):
 
 # 抓设定中心/竞赛内容/故事系列页里面的列表
 class ScpCollectionSpider(scrapy.Spider):
-    name = "collection"
+    name = "collection_list"
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
-    start_urls = [('{_s_}://{_d_}' + link).format(**URL_PARAMS) for link in
-                  get_collection_item_link()]
+    start_urls = list(set([('{_s_}://{_d_}' + link).format(**URL_PARAMS) for link in
+                           get_collection_item_link()]))
     handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
 
     def __init__(self, category=None, *args, **kwargs):
@@ -243,20 +247,19 @@ class ScpCollectionSpider(scrapy.Spider):
     def parse(self, response):
         pq_doc = pq(response.body)
         scp_type = self.get_type_by_url(response.url[30:])
-        print('scpType = ' + str(scp_type))
-        if scp_type == 13 or scp_type == 14:
+        if scp_type == 13 or scp_type == 14 or scp_type == 1:  # '/scp-001'
             sub_item_type = 22
         elif scp_type == 19 or scp_type == 20:
             sub_item_type = 23
         else:
             sub_item_type = scp_type + 1
-        print('sub_item_type = ' + str(sub_item_type))
         item_list = parse_html(pq_doc, sub_item_type)
         for info in item_list:
             yield info
 
     def get_type_by_url(self, link):
-        print(link)
+        if link == '/scp-001':
+            return 1
         self.cur.execute('''select scp_type from scp_collection where link = ?''', (link,))
         scp_type = [t[0] for t in self.cur][0]
         return scp_type

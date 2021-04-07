@@ -23,22 +23,22 @@ class ScpBaseItem(scrapy.Item):
     download_type = scrapy.Field()
 
 
-class ScpTaleItem(ScpBaseItem):
-    author = scrapy.Field()
-    created_time = scrapy.Field()
+# class ScpTaleItem(ScpBaseItem):
+#     author = scrapy.Field()
+#     created_time = scrapy.Field()
     # month = scrapy.Field()
     # page_code = scrapy.Field()
 
 
 # FIXME 竞赛胜出文章
-class ScpContestArticleItem(ScpBaseItem):
-    author = scrapy.Field()
+# class ScpContestArticleItem(ScpBaseItem):
+#     author = scrapy.Field()
     # contest_name = scrapy.Field()
     # contest_link = scrapy.Field()
 
 
-class ScpContestItem(ScpBaseItem):
-    creator = scrapy.Field()
+# class ScpContestItem(ScpBaseItem):
+#     creator = scrapy.Field()
 
 
 # class ScpEventItem(ScpBaseItem):
@@ -46,16 +46,16 @@ class ScpContestItem(ScpBaseItem):
 
 
 # collection
-class ScpSettingItem(ScpBaseItem):
-    desc = scrapy.Field()
-    snippet = scrapy.Field()
-    subtext = scrapy.Field()
+# class ScpSettingItem(ScpBaseItem):
+#     desc = scrapy.Field()
+#     snippet = scrapy.Field()
+#     subtext = scrapy.Field()
 
 
 # collection
-class ScpStorySeriesItem(ScpBaseItem):
-    author = scrapy.Field()
-    snippet = scrapy.Field()
+# class ScpStorySeriesItem(ScpBaseItem):
+#     author = scrapy.Field()
+#     snippet = scrapy.Field()
 
 
 class ScpTagItem(scrapy.Item):

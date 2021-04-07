@@ -24,37 +24,37 @@ def write_to_db(cur, scp_item):
         #     print("insert ScpEventItem" + scp_item['title'])
         #     cur.execute('''insert into scps (title, link, scp_type, event_type) values (?,?,?,?)''',
         #                 (scp_item['title'], scp_item['link'], scp_item['scp_type'], scp_item['event_type'],))
-        if type(scp_item) == ScpTaleItem:
-            cur.execute(
-                '''insert into scps (_index, title, link, scp_type, author, created_time, sub_scp_type) values 
-                (?,?,?,?,?,?,?)''',
-                (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['author'],
-                 scp_item['created_time'], scp_item['sub_scp_type'],))
-        elif type(scp_item) == ScpStorySeriesItem:
-            print("insert ScpStorySeriesItem")
-            cur.execute(
-                '''insert into scp_collection (_index, title, link, scp_type, author, snippet) values (?,?,?,?,?,?)''',
-                (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['author'],
-                 scp_item['snippet'],))
-        elif type(scp_item) == ScpContestArticleItem:
-            print("insert ScpContestArticleItem")
-            cur.execute(
-                '''insert into scps (_index, title, link, scp_type) values
-                    (?,?,?,?)''',
-                (scp_item['index'], scp_item['title'], link, scp_item['scp_type']))
-        elif type(scp_item) == ScpContestItem:
-            print("insert ScpContestItem")
-            cur.execute(
-                '''insert into scp_collection (_index, title, link, scp_type, author) values 
-                    (?,?,?,?,?)''',
-                (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['creator'],))
-        elif type(scp_item) == ScpSettingItem:
-            print("insert ScpSettingItem")
-            cur.execute('''insert into scp_collection (_index, title, link, scp_type, desc, snippet, subtext) values 
-                (?,?,?,?,?,?,?)''',
-                        (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['desc'],
-                         scp_item['snippet'], scp_item['subtext'],))
-        elif type(scp_item) == ScpBaseItem:
+        # if type(scp_item) == ScpTaleItem:
+        #     cur.execute(
+        #         '''insert into scps (_index, title, link, scp_type, author, created_time, sub_scp_type) values
+        #         (?,?,?,?,?,?,?)''',
+        #         (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['author'],
+        #          scp_item['created_time'], scp_item['sub_scp_type'],))
+        # if type(scp_item) == ScpStorySeriesItem:
+        #     print("insert ScpStorySeriesItem")
+        #     cur.execute(
+        #         '''insert into scp_collection (_index, title, link, scp_type, author, snippet) values (?,?,?,?,?,?)''',
+        #         (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['author'],
+        #          scp_item['snippet'],))
+        # elif type(scp_item) == ScpContestArticleItem:
+        #     print("insert ScpContestArticleItem")
+        #     cur.execute(
+        #         '''insert into scps (_index, title, link, scp_type) values
+        #             (?,?,?,?)''',
+        #         (scp_item['index'], scp_item['title'], link, scp_item['scp_type']))
+        # elif type(scp_item) == ScpContestItem:
+        #     print("insert ScpContestItem")
+        #     cur.execute(
+        #         '''insert into scp_collection (_index, title, link, scp_type, author) values
+        #             (?,?,?,?,?)''',
+        #         (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['creator'],))
+        # elif type(scp_item) == ScpSettingItem:
+        #     print("insert ScpSettingItem")
+        #     cur.execute('''insert into scp_collection (_index, title, link, scp_type, desc, snippet, subtext) values
+        #         (?,?,?,?,?,?,?)''',
+        #                 (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['desc'],
+        #                  scp_item['snippet'], scp_item['subtext'],))
+        if type(scp_item) == ScpBaseItem:
             print(scp_item['title'])
             cur.execute('''insert into scps (_index, title, link, scp_type, sub_scp_type) values (?,?,?,?,?)''',
                         (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['sub_scp_type'],))
