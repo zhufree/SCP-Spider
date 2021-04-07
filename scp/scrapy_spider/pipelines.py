@@ -7,6 +7,19 @@ import sqlite3
 from .spiders.constants import DB_NAME, TEST_DB_NAME, DATA_TYPE
 from .items import *
 
+need_check_data_type = [DATA_TYPE['reports-interviews-and-logs'], DATA_TYPE['art']]  # 需要去重的type
+
+
+def check_if_link_exist(cursor, url, scp_type):
+    cursor.execute(
+        "SELECT * FROM scps WHERE link = '{}' and scp_type = {}".format(
+            url, scp_type
+        ))
+    if cursor.fetchone() is None:
+        return False
+    else:
+        return True
+
 
 def write_to_db(cur, scp_item):
     """
@@ -56,15 +69,21 @@ def write_to_db(cur, scp_item):
         #                  scp_item['snippet'], scp_item['subtext'],))
         if type(scp_item) == ScpBaseItem:
             print(scp_item['title'])
-            cur.execute('''insert into scps (_index, title, link, scp_type, sub_scp_type) values (?,?,?,?,?)''',
+            if scp_item['scp_type'] in need_check_data_type:
+                if not check_if_link_exist(cur, link, scp_item['scp_type']):
+                    cur.execute(
+                        '''insert into scps (_index, title, link, scp_type, sub_scp_type) values (?,?,?,?,?)''',
                         (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['sub_scp_type'],))
-
+            else:
+                cur.execute(
+                    '''insert into scps (_index, title, link, scp_type, sub_scp_type) values (?,?,?,?,?)''',
+                    (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['sub_scp_type'],))
     except Exception as e:
         print(e)
 
 
 def update_detail_in_db(cur, detail_item):
-    print(detail_item['link'])
+    # print(detail_item['link'])
     cur.execute('''INSERT OR REPLACE INTO scp_detail (link, detail, not_found) values (?,?,?)''',
                 (detail_item['link'], detail_item['detail'], detail_item['not_found'],))
     # cur.execute('''UPDATE scp_collection SET detail = ?, not_found = ? WHERE LINK = ?''',
@@ -74,8 +93,8 @@ def update_detail_in_db(cur, detail_item):
 class ScpSpiderPipeline(object):
 
     def open_spider(self, spider):
-        self.con = sqlite3.connect(DB_NAME)
-        # self.con = sqlite3.connect(TEST_DB_NAME)
+        # self.con = sqlite3.connect(DB_NAME)
+        self.con = sqlite3.connect(TEST_DB_NAME)
         self.cur = self.con.cursor()
 
     def close_spider(self, spider):
@@ -86,13 +105,11 @@ class ScpSpiderPipeline(object):
         if type(item) == ScpDetailItem:
             update_detail_in_db(self.cur, item)
         else:
-            print("write to db")
             write_to_db(self.cur, item)
         return item
 
     def parse_detail(self, response):
         detail_dom = response.css('div#page-content')[0]
-        print(detail_dom.css('::text')).extract()
 
     def item_completed(self, results, item, info):
         return item

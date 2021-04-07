@@ -78,42 +78,43 @@ DATA_TYPE = {
     'scp-ex-cn': 6,
 
     # 故事
-    'tales-by-page-name': 3,
-    'tales-cn-by-page-name': 4,
+    'tales-by-page-name': 7,
+    'tales-cn-by-page-name': 8,
     # 设定中心
-    'canon-hub': 13,
-    'canon-hub-cn': 14,
-    # 故事系列
-    'series-archive': 19,
-    'series-archive-cn': 20,
-    # 事故报告
-    'reports-interviews-and-logs': 5,
-    'log-of-anomalous-items-cn': 10,
-
-    # 图书馆
-    'library-single-page': 6,
-    'goi': 7,
-    'art': 8,
-    # 竞赛
-    'contest-archive': 15,
-    'contest-archive-item': 16,
-    # 中分竞赛
-    'contest-archive-cn': 17,
-    'contest-archive-cn-item': 18,
-    # 放逐者之图书馆
-    'wander': 7,
-    'wander-cn': 8,
-    # 国际版
-    'scp-international': 9,
-
-    # 背景和指导
-    'info-single-page': 10,
-
-    # 迭代页面
-    'offset': 21,
+    'canon-hub': 9,
+    'canon-hub-cn': 10,
     # 设定item
     'canon_item': 22,
     'series-archive-item': 23,
+    # 故事系列
+    'series-archive': 11,
+    'series-archive-cn': 12,
+    # 事故报告
+    'reports-interviews-and-logs': 13,
+    'log-of-anomalous-page-cn': 14,
+
+    # 图书馆
+    'library-single-page': 17,
+    'goi': 18,
+    'art': 19,
+    # 竞赛
+    'contest-archive': 20,
+    'contest-archive-item': 21,
+    # 中分竞赛
+    'contest-archive-cn': 22,
+    'contest-archive-cn-item': 23,
+    # 放逐者之图书馆
+    'wander': 24,
+    'wander-cn': 25,
+    # 国际版
+    'scp-international': 26,
+
+    # 背景和指导
+    'info-single-page': 27,
+
+    # 迭代页面
+    'offset': 100,
+
 }
 
 
@@ -147,6 +148,12 @@ LIBRARY_PAGE_ENDPOINTS = [
     '{_s_}://{_d_}/log-of-unexplained-locations'.format(**URL_PARAMS),
 ]
 
+# 异常物品记录-cn, 每个是单页面
+CN_ANOMALOUS_PAGE_ENDPOINTS = [
+    '{_s_}://{_d_}/log-of-anomalous-items-cn/p/{index}'.format(**URL_PARAMS, index=i) for i in range(1, 8)
+]
+
+
 # 单页面列表，直接抓内容
 INFO_PAGE_ENDPOINTS = [
     # 背景资料
@@ -169,18 +176,15 @@ INFO_PAGE_ENDPOINTS = [
     '{_s_}://{_d_}/how-to-write-an-scp'.format(**URL_PARAMS),
 ]
 
-# 实验记录3， 探索报告，事故/事件报告，访谈记录，补充材料5
+# 实验记录3， 探索报告，事故/事件报告，访谈记录，补充材料5，列表
+# 要做去重处理
 REPORT_ENDPOINTS = [
     '{_s_}://{_d_}/incident-reports-eye-witness-interviews-and-personal-logs/p/{index}'.format(
         **URL_PARAMS, index=i) for i in range(1, 6)
 ]
 
-# 异常物品记录-cn
-CN_ANOMALOUS_ITEM_ENDPOINTS = [
-    '{_s_}://{_d_}/log-of-anomalous-items-cn/p/{index}'.format(**URL_PARAMS, index=i) for i in range(1, 8)
-]
 
-# art
+# art，列表，要去重
 ART_ENDPOINTS = [
     '{_s_}://{_d_}/scp-artwork-hub/p/{index}'.format(**URL_PARAMS, index=i) for i in range(1, 10)
 ]
@@ -212,7 +216,7 @@ ENDPOINTS = {
     'wander': '{_s_}://{_d_}/wanderers:the-index'.format(**URL_PARAMS),
     'wander-cn': '{_s_}://{_d_}/wanderers:the-index-cn'.format(**URL_PARAMS),
 
-    #国际版
+    # 国际版
     'scp-international': '{_s_}://{_d_}/scp-international'.format(**URL_PARAMS)
 }
 

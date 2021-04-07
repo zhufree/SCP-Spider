@@ -20,6 +20,8 @@ def parse_html(pq_doc, scp_type):
         return parse_tale_html(pq_doc, scp_type)
     elif scp_type == DATA_TYPE['reports-interviews-and-logs']:
         return parse_report_html(pq_doc)
+    elif scp_type == DATA_TYPE['art']:
+        return parse_art_html(pq_doc)
     elif DATA_TYPE['reports-interviews-and-logs'] < scp_type <= DATA_TYPE['canon-hub-cn']:
         return parse_setting_html(pq_doc, scp_type)
     elif scp_type == DATA_TYPE['contest-archive']:
@@ -89,8 +91,7 @@ def parse_tale_html(pq_doc, scp_type):
 def parse_joke_and_ex_html(pq_doc, scp_type):
     base_info_list = []
     index = 0
-    parse_path = 'div#page-content div.content-panel ul li' if scp_type == DATA_TYPE[
-        'archived-scps'] else 'div.content-panel>ul>li'
+    parse_path = 'div.content-panel>ul>li'
     for li in list(pq_doc(parse_path).items()):
         link = li('a').attr('href')
         if 'http://scp-wiki-cn.wikidot.com' in link:
@@ -99,7 +100,6 @@ def parse_joke_and_ex_html(pq_doc, scp_type):
             'title': li.text(),
             'link': link,
             'scp_type': scp_type,
-            'sub_scp_type': '',
             'index': index
         }
         base_info_list.append(ScpBaseItem(new_article))
@@ -152,6 +152,28 @@ def parse_setting_html(pq_doc, scp_type):
         setting_list.append(ScpBaseItem(new_article))
         index += 1
     return setting_list
+
+
+art_index = 0
+
+
+def parse_art_html(pq_doc):
+    global art_index
+    art_list = []
+    parse_path = 'div.content-panel tr'
+    for tr in list(pq_doc(parse_path).items()):
+        title = tr('td>a').text()
+        if title != '':
+            new_article = {
+                'title': title,
+                'link': tr('td>a').attr('href'),
+                'scp_type': DATA_TYPE['art'],
+                'sub_scp_type': '',
+                'index': art_index
+            }
+            art_list.append(ScpBaseItem(new_article))
+            art_index += 1
+    return art_list
 
 
 def parse_contest_list_html(pq_doc):
@@ -260,7 +282,6 @@ def parse_international_page(pq_doc):
             current_item = tab_item_list[j]
             if current_item.is_('h1'):
                 current_h1 = current_item
-                print(current_item)
                 if current_h1.text() == 'SCP系列':
                     content_type = 'series'
                 elif current_h1.text() == '搞笑SCP系列':
@@ -281,7 +302,6 @@ def parse_international_page(pq_doc):
                         'sub_scp_type': country_code + '-' + content_type,
                         'index': index
                     }
-                    print(new_article)
                     international_list.append(ScpBaseItem(new_article))
                     index += 1
             elif current_item.is_('.list-pages-box'):
@@ -293,7 +313,6 @@ def parse_international_page(pq_doc):
                         'sub_scp_type': country_code + '-' + content_type,
                         'index': index
                     }
-                    print(new_article)
                     international_list.append(ScpBaseItem(new_article))
                     index += 1
     return international_list
