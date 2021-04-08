@@ -68,7 +68,7 @@ def parse_series_html(pq_doc, scp_type):
     return base_info_list
 
 
-TALE_LETTER_LIST = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+LETTER_LIST = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
                     'U', 'V', 'W', 'X', 'Y', 'Z', '0-9']
 
 
@@ -84,7 +84,7 @@ def parse_tale_html(pq_doc, scp_type):
                 # 'author': tds[1].text(),
                 # 'created_time': tds[2].text(),
                 'scp_type': scp_type,
-                'sub_scp_type': TALE_LETTER_LIST[i],
+                'sub_scp_type': LETTER_LIST[i],
                 'index': index
             }
             tale_list.append(ScpBaseItem(new_tale))
@@ -266,16 +266,19 @@ def parse_contest_cn_html(pq_doc):
 def parse_wander_html(pq_doc, scp_type):
     wander_list = []
     index = 0
-    for a in list(pq_doc('a.book').items()):
-        new_article = {
-            'title': a('span.title').text(),
-            'link': a.attr('href'),
-            'scp_type': scp_type,
-            'sub_scp_type': '',
-            'index': index
-        }
-        wander_list.append(ScpBaseItem(new_article))
-        index += 1
+    tabs = list(pq_doc('div.yui-content>div').items())
+    print(len(tabs))
+    for i in range(0, 27):
+        for a in list(tabs[i]('a.book').items()):
+            new_article = {
+                'title': a('span.title').text(),
+                'link': a.attr('href'),
+                'scp_type': scp_type,
+                'sub_scp_type': LETTER_LIST[i],
+                'index': index
+            }
+            wander_list.append(ScpBaseItem(new_article))
+            index += 1
     return wander_list
 
 

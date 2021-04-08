@@ -153,7 +153,6 @@ CN_ANOMALOUS_PAGE_ENDPOINTS = [
     '{_s_}://{_d_}/log-of-anomalous-items-cn/p/{index}'.format(**URL_PARAMS, index=i) for i in range(1, 8)
 ]
 
-
 # 单页面列表，直接抓内容
 INFO_PAGE_ENDPOINTS = [
     # 背景资料
@@ -183,7 +182,6 @@ REPORT_ENDPOINTS = [
         **URL_PARAMS, index=i) for i in range(1, 6)
 ]
 
-
 # art，列表，要去重
 ART_ENDPOINTS = [
     '{_s_}://{_d_}/scp-artwork-hub/p/{index}'.format(**URL_PARAMS, index=i) for i in range(1, 10)
@@ -196,7 +194,6 @@ SERIES_STORY_ENDPOINTS = [
 CN_SERIES_STORY_ENDPOINTS = [
     '{_s_}://{_d_}/series-archive-cn/p/{index}'.format(**URL_PARAMS, index=i) for i in range(1, 3)
 ]
-
 
 # 其他列表页面
 ENDPOINTS = {
@@ -228,6 +225,9 @@ ENDPOINTS = {
     # 国际版
     'scp-international': '{_s_}://{_d_}/scp-international'.format(**URL_PARAMS)
 }
+
+LIST_ENDPOINTS = list(ENDPOINTS.values()) + CN_SERIES_STORY_ENDPOINTS + SERIES_STORY_ENDPOINTS + ART_ENDPOINTS + REPORT_ENDPOINTS+\
+                 SERIES_CN_ENDPOINTS + SERIES_ENDPOINTS
 
 REVERSE_ENDPOINTS = dict(zip(ENDPOINTS.values(), ENDPOINTS.keys()))
 
