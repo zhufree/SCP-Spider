@@ -1,4 +1,5 @@
-DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\scp.db'
+CATE_DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\scp_category_v2.db'
+DETAIL_DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\scp_detail_v2.db'
 TEST_DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\test_scp.db'
 # 先不用这两个字段
 # [contest_name] TEXT, 
@@ -27,29 +28,3 @@ CREATE TABLE [scp_detail](
   [tags] TEXT);
 '''
 
-
-CREATE_COLLECTION_DB_SQL = """
-CREATE TABLE [scp_collection](
-  [_id] INTEGER PRIMARY KEY AUTOINCREMENT, 
-  [_index] INTEGER,
-  [title] TEXT NOT NULL, 
-  [link] TEXT NOT NULL, 
-  [download_type] INTEGER, 
-  [scp_type] INTEGER, 
-  [author] TEXT,
-  [desc] TEXT, 
-  [creator] TEXT,
-  [snippet] TEXT, 
-  [subtext] TEXT, 
-  [sub_links] TEXT
-);
-"""
-
-CREATE_TAG_DB_SQL = """
-CREATE TABLE [tag_scp](
-  [_id] INTEGER PRIMARY KEY, 
-  [link] TEXT UNIQUE, 
-  [title] TEXT, 
-  [detail] TEXT, 
-  [tags] TEXT);
-"""

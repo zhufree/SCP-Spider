@@ -6,7 +6,8 @@ HEADERS = {
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
 }
 
-DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\scp.db'
+CATE_DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\scp_category_v2.db'
+DETAIL_DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\scp_detail_v2.db'
 TEST_DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\test_scp.db'
 
 # 先不用这两个字段
@@ -36,31 +37,6 @@ CREATE TABLE [scp_detail](
   [tags] TEXT);
 '''
 
-CREATE_COLLECTION_DB_SQL = """
-CREATE TABLE [scp_collection](
-  [_id] INTEGER PRIMARY KEY AUTOINCREMENT, 
-  [_index] INTEGER,
-  [title] TEXT NOT NULL, 
-  [link] TEXT NOT NULL, 
-  [download_type] INTEGER, 
-  [scp_type] INTEGER, 
-  [author] TEXT,
-  [desc] TEXT, 
-  [creator] TEXT,
-  [snippet] TEXT, 
-  [subtext] TEXT, 
-  [sub_links] TEXT
-);
-"""
-
-CREATE_TAG_DB_SQL = """
-CREATE TABLE [tag_scp](
-  [_id] INTEGER PRIMARY KEY, 
-  [link] TEXT UNIQUE, 
-  [title] TEXT, 
-  [detail] TEXT, 
-  [tags] TEXT);
-"""
 
 URL_PARAMS = {
     '_s_': 'http',
@@ -83,38 +59,33 @@ DATA_TYPE = {
     # 设定中心
     'canon-hub': 9,
     'canon-hub-cn': 10,
-    # 设定item
-    'canon_item': 91,
     # 故事系列
     'series-archive': 11,
     'series-archive-cn': 12,
-    'series-archive-item': 111,
     # 事故报告
     'reports-interviews-and-logs': 13,
     'log-of-anomalous-page-cn': 14,
+    'short-story': 15,
 
     # 图书馆
-    'library-single-page': 17,
-    'goi': 18,
-    'art': 19,
+    'library-single-page': 16,
+    'goi': 17,
+    'art': 18,
     # 竞赛
-    'contest-archive': 20,
-    'contest-archive-item': 201,
+    'contest-archive': 19,
     # 中分竞赛
-    'contest-archive-cn': 21,
-    'contest-archive-cn-item': 211,
+    'contest-archive-cn': 20,
     # 放逐者之图书馆
-    'wander': 23,
-    'wander-cn': 24,
+    'wander': 21,
+    'wander-cn': 22,
     # 国际版
-    'scp-international': 25,
+    'scp-international': 23,
 
     # 背景和指导
-    'info-single-page': 26,
+    'info-single-page': 24,
 
     # 迭代页面
     'offset': 100,
-
 }
 
 
@@ -136,7 +107,7 @@ SERIES_CN_ENDPOINTS = [
 ]
 
 # 图书馆单页
-LIBRARY_PAGE_ENDPOINTS = [
+LIBRARY_PAGE = [
     # 用户推荐清单
     '{_s_}://{_d_}/user-curated-lists'.format(**URL_PARAMS),
     # 异常物品记录
@@ -149,24 +120,37 @@ LIBRARY_PAGE_ENDPOINTS = [
 ]
 
 # 异常物品记录-cn, 每个是单页面
-CN_ANOMALOUS_PAGE_ENDPOINTS = [
+CN_ANOMALOUS_PAGE = [
     '{_s_}://{_d_}/log-of-anomalous-items-cn/p/{index}'.format(**URL_PARAMS, index=i) for i in range(1, 8)
 ]
 
+SHORT_STORY_PAGE = [
+    '{_s_}://{_d_}/short-stories/p/{index}'.format(**URL_PARAMS, index=i) for i in range(1, 4)
+]
+
 # 单页面列表，直接抓内容
-INFO_PAGE_ENDPOINTS = [
+INFO_PAGE = [
     # 背景资料
+    # 关于基金会
+    '{_s_}://{_d_}/about-the-scp-foundation'.format(**URL_PARAMS),
+    # 相关组织
+    '{_s_}://{_d_}/groups-of-interest'.format(**URL_PARAMS),
+    '{_s_}://{_d_}/groups-of-interest-cn'.format(**URL_PARAMS),
+    # 項目等級
+    '{_s_}://{_d_}/object-classes'.format(**URL_PARAMS),
+    # 人员及角色档案
+    '{_s_}://{_d_}/personnel-and-character-dossier'.format(**URL_PARAMS),
+    # 安保许可等级
+    '{_s_}://{_d_}/security-clearance-levels'.format(**URL_PARAMS),
     # 安保设施地点
     '{_s_}://{_d_}/secure-facilities-locations'.format(**URL_PARAMS),
     '{_s_}://{_d_}/secure-facilities-locations-cn'.format(**URL_PARAMS),
-    # 項目等級
-    '{_s_}://{_d_}/object-classes'.format(**URL_PARAMS),
-    # 安保许可等级
-    '{_s_}://{_d_}/security-clearance-levels'.format(**URL_PARAMS),
     # 机动特遣队
     '{_s_}://{_d_}/task-forces'.format(**URL_PARAMS),
 
     # 指导
+    # 指导中心
+    '{_s_}://{_d_}/guide-hub'.format(**URL_PARAMS),
     # 常见问题解答
     '{_s_}://{_d_}/faq'.format(**URL_PARAMS),
     # 给新手的指南
@@ -230,7 +214,6 @@ LIST_ENDPOINTS = list(ENDPOINTS.values()) + CN_SERIES_STORY_ENDPOINTS + SERIES_S
                  SERIES_CN_ENDPOINTS + SERIES_ENDPOINTS
 
 REVERSE_ENDPOINTS = dict(zip(ENDPOINTS.values(), ENDPOINTS.keys()))
-
 
 
 if __name__ == '__main__':

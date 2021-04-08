@@ -34,9 +34,6 @@ def parse_html(pq_doc, scp_type):
         return parse_contest_cn_html(pq_doc)
     elif DATA_TYPE['wander'] <= scp_type <= DATA_TYPE['wander-cn']:
         return parse_wander_html(pq_doc, scp_type)
-    elif scp_type == DATA_TYPE['contest-archive-item'] or scp_type == DATA_TYPE['contest-archive-cn-item'] \
-            or scp_type == DATA_TYPE['canon_item'] or scp_type == DATA_TYPE['series-archive-item']:
-        return parse_collection_item_html(pq_doc, scp_type)
     elif scp_type == DATA_TYPE['scp-international']:
         return parse_international_page(pq_doc)
 
@@ -64,7 +61,6 @@ def parse_series_html(pq_doc, scp_type):
                 'index': index
             }
             base_info_list.append(ScpBaseItem(new_article))
-
     return base_info_list
 
 

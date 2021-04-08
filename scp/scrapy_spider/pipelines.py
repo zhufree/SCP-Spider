@@ -4,7 +4,7 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import sqlite3
-from .spiders.constants import DB_NAME, TEST_DB_NAME, DATA_TYPE
+from .spiders.constants import CATE_DB_NAME, DETAIL_DB_NAME, TEST_DB_NAME, DATA_TYPE
 from .items import *
 
 need_check_data_type = [DATA_TYPE['reports-interviews-and-logs'], DATA_TYPE['art']]  # 需要去重的type
@@ -21,7 +21,7 @@ def check_if_link_exist(cursor, url, scp_type):
         return True
 
 
-def write_to_db(cur, scp_item):
+def write_to_db(cate_cur, detail_cur, scp_item):
     """
     insert scp_item into db
     """
@@ -32,84 +32,59 @@ def write_to_db(cur, scp_item):
         else:
             if 'http://scp-wiki-cn.wikidot.com' in link:
                 link = link[30:]
-            cur.execute('''insert or ignore into scp_detail (link) values (?)''', (link,))
-        # if type(scp_item) == ScpEventItem:
-        #     print("insert ScpEventItem" + scp_item['title'])
-        #     cur.execute('''insert into scps (title, link, scp_type, event_type) values (?,?,?,?)''',
-        #                 (scp_item['title'], scp_item['link'], scp_item['scp_type'], scp_item['event_type'],))
-        # if type(scp_item) == ScpTaleItem:
-        #     cur.execute(
-        #         '''insert into scps (_index, title, link, scp_type, author, created_time, sub_scp_type) values
-        #         (?,?,?,?,?,?,?)''',
-        #         (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['author'],
-        #          scp_item['created_time'], scp_item['sub_scp_type'],))
-        # if type(scp_item) == ScpStorySeriesItem:
-        #     print("insert ScpStorySeriesItem")
-        #     cur.execute(
-        #         '''insert into scp_collection (_index, title, link, scp_type, author, snippet) values (?,?,?,?,?,?)''',
-        #         (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['author'],
-        #          scp_item['snippet'],))
-        # elif type(scp_item) == ScpContestArticleItem:
-        #     print("insert ScpContestArticleItem")
-        #     cur.execute(
-        #         '''insert into scps (_index, title, link, scp_type) values
-        #             (?,?,?,?)''',
-        #         (scp_item['index'], scp_item['title'], link, scp_item['scp_type']))
-        # elif type(scp_item) == ScpContestItem:
-        #     print("insert ScpContestItem")
-        #     cur.execute(
-        #         '''insert into scp_collection (_index, title, link, scp_type, author) values
-        #             (?,?,?,?,?)''',
-        #         (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['creator'],))
-        # elif type(scp_item) == ScpSettingItem:
-        #     print("insert ScpSettingItem")
-        #     cur.execute('''insert into scp_collection (_index, title, link, scp_type, desc, snippet, subtext) values
-        #         (?,?,?,?,?,?,?)''',
-        #                 (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['desc'],
-        #                  scp_item['snippet'], scp_item['subtext'],))
+            detail_cur.execute('''insert or ignore into scp_detail (link) values (?)''', (link,))
         if type(scp_item) == ScpBaseItem:
             print(scp_item['title'])
             if scp_item['scp_type'] in need_check_data_type:
-                if not check_if_link_exist(cur, link, scp_item['scp_type']):
-                    cur.execute(
+                if not check_if_link_exist(cate_cur, link, scp_item['scp_type']):
+                    cate_cur.execute(
                         '''insert into scps (_index, title, link, scp_type, sub_scp_type) values (?,?,?,?,?)''',
                         (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['sub_scp_type'],))
             else:
-                cur.execute(
+                cate_cur.execute(
                     '''insert into scps (_index, title, link, scp_type, sub_scp_type) values (?,?,?,?,?)''',
                     (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['sub_scp_type'],))
     except Exception as e:
         print(e)
 
 
+replace_link_dict = {
+    '/scp-es-026': '/scp-179',
+    '/scp-1001-ru': '/scp-2470',
+    '/scp-1047-j': '/joke-scps',
+}
+
+
 def update_detail_in_db(cur, detail_item):
-    # print(detail_item['link'])
-    cur.execute('''INSERT OR REPLACE INTO scp_detail (link, detail, not_found) values (?,?,?)''',
-                (detail_item['link'], detail_item['detail'], detail_item['not_found'],))
-    # cur.execute('''UPDATE scp_collection SET detail = ?, not_found = ? WHERE LINK = ?''',
-    #             (detail_item['detail'], detail_item['not_found'], detail_item['link']))
+    cur.execute('''INSERT OR REPLACE INTO scp_detail (link, detail, not_found, tags) values (?,?,?,?)''',
+                (detail_item['link'], detail_item['detail'], detail_item['not_found'], detail_item['tags'],))
 
 
 class ScpSpiderPipeline(object):
 
     def open_spider(self, spider):
-        # self.con = sqlite3.connect(DB_NAME)
-        self.con = sqlite3.connect(TEST_DB_NAME)
-        self.cur = self.con.cursor()
+        self.cate_con = sqlite3.connect(CATE_DB_NAME)
+        self.detail_con = sqlite3.connect(DETAIL_DB_NAME)
+        self.test_con = sqlite3.connect(TEST_DB_NAME)
+        self.cate_cur = self.cate_con.cursor()
+        self.detail_cur = self.detail_con.cursor()
+        self.test_cur = self.test_con.cursor()
 
     def close_spider(self, spider):
-        self.con.commit()
-        self.con.close()
+        self.cate_con.commit()
+        self.detail_con.commit()
+        self.test_con.commit()
+        self.cate_con.close()
+        self.detail_con.close()
+        self.test_con.close()
 
     def process_item(self, item, spider):
         if type(item) == ScpDetailItem:
-            update_detail_in_db(self.cur, item)
+            update_detail_in_db(self.detail_cur, item)
         else:
-            write_to_db(self.cur, item)
+            write_to_db(self.cate_cur, self.detail_cur, item)
+            # write_to_db(self.test_cur, self.test_cur, item)
         return item
-
-    def parse_detail(self, response):
-        detail_dom = response.css('div#page-content')[0]
 
     def item_completed(self, results, item, info):
         return item
