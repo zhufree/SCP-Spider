@@ -84,11 +84,11 @@ DATA_TYPE = {
     'canon-hub': 9,
     'canon-hub-cn': 10,
     # 设定item
-    'canon_item': 22,
-    'series-archive-item': 23,
+    'canon_item': 91,
     # 故事系列
     'series-archive': 11,
     'series-archive-cn': 12,
+    'series-archive-item': 111,
     # 事故报告
     'reports-interviews-and-logs': 13,
     'log-of-anomalous-page-cn': 14,
@@ -99,18 +99,18 @@ DATA_TYPE = {
     'art': 19,
     # 竞赛
     'contest-archive': 20,
-    'contest-archive-item': 21,
+    'contest-archive-item': 201,
     # 中分竞赛
-    'contest-archive-cn': 22,
-    'contest-archive-cn-item': 23,
+    'contest-archive-cn': 21,
+    'contest-archive-cn-item': 211,
     # 放逐者之图书馆
-    'wander': 24,
-    'wander-cn': 25,
+    'wander': 23,
+    'wander-cn': 24,
     # 国际版
-    'scp-international': 26,
+    'scp-international': 25,
 
     # 背景和指导
-    'info-single-page': 27,
+    'info-single-page': 26,
 
     # 迭代页面
     'offset': 100,
@@ -189,6 +189,15 @@ ART_ENDPOINTS = [
     '{_s_}://{_d_}/scp-artwork-hub/p/{index}'.format(**URL_PARAMS, index=i) for i in range(1, 10)
 ]
 
+# 故事系列列表目录页
+SERIES_STORY_ENDPOINTS = [
+    '{_s_}://{_d_}/series-archive/p/{index}'.format(**URL_PARAMS, index=i) for i in range(1, 5)
+]
+CN_SERIES_STORY_ENDPOINTS = [
+    '{_s_}://{_d_}/series-archive-cn/p/{index}'.format(**URL_PARAMS, index=i) for i in range(1, 3)
+]
+
+
 # 其他列表页面
 ENDPOINTS = {
     # joke
@@ -203,15 +212,15 @@ ENDPOINTS = {
     # 设定中心
     'canon-hub': '{_s_}://{_d_}/canon-hub'.format(**URL_PARAMS),
     'canon-hub-cn': '{_s_}://{_d_}/canon-hub-cn'.format(**URL_PARAMS),
-    # 征文竞赛
-    'contest-archive': '{_s_}://{_d_}/contest-archive'.format(**URL_PARAMS),
-    'contest-archive-cn': '{_s_}://{_d_}/contest-archive-cn'.format(**URL_PARAMS),
     # 中国分部故事系列
     'series-archive-cn': '{_s_}://{_d_}/series-archive-cn'.format(**URL_PARAMS),
 
     # 图书馆
     # GOI
     'goi': '{_s_}://{_d_}/goi-formats'.format(**URL_PARAMS),
+    # 征文竞赛
+    'contest-archive': '{_s_}://{_d_}/contest-archive'.format(**URL_PARAMS),
+    'contest-archive-cn': '{_s_}://{_d_}/contest-archive-cn'.format(**URL_PARAMS),
     # 放逐者图书馆
     'wander': '{_s_}://{_d_}/wanderers:the-index'.format(**URL_PARAMS),
     'wander-cn': '{_s_}://{_d_}/wanderers:the-index-cn'.format(**URL_PARAMS),
@@ -222,13 +231,6 @@ ENDPOINTS = {
 
 REVERSE_ENDPOINTS = dict(zip(ENDPOINTS.values(), ENDPOINTS.keys()))
 
-# 故事系列列表目录页
-SERIES_STORY_ENDPOINTS = [
-    '{_s_}://{_d_}/series-archive'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/series-archive/p/2'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/series-archive/p/3'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/series-archive/p/4'.format(**URL_PARAMS),
-]
 
 
 if __name__ == '__main__':

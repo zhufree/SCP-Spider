@@ -18,21 +18,25 @@ def parse_html(pq_doc, scp_type):
         return parse_joke_and_ex_html(pq_doc, scp_type)
     elif DATA_TYPE['scp-ex-cn'] < scp_type <= DATA_TYPE['tales-cn-by-page-name']:
         return parse_tale_html(pq_doc, scp_type)
+    elif DATA_TYPE['canon-hub'] <= scp_type <= DATA_TYPE['canon-hub-cn']:
+        return parse_setting_html(pq_doc, scp_type)
+    elif DATA_TYPE['series-archive'] <= scp_type <= DATA_TYPE['series-archive-cn']:
+        return parse_story_series_html(pq_doc, scp_type)
     elif scp_type == DATA_TYPE['reports-interviews-and-logs']:
         return parse_report_html(pq_doc)
+    elif scp_type == DATA_TYPE['goi']:
+        return parse_goi_html(pq_doc)
     elif scp_type == DATA_TYPE['art']:
         return parse_art_html(pq_doc)
-    elif DATA_TYPE['reports-interviews-and-logs'] < scp_type <= DATA_TYPE['canon-hub-cn']:
-        return parse_setting_html(pq_doc, scp_type)
     elif scp_type == DATA_TYPE['contest-archive']:
         return parse_contest_list_html(pq_doc)
     elif scp_type == DATA_TYPE['contest-archive-cn']:
         return parse_contest_cn_html(pq_doc)
+    elif DATA_TYPE['wander'] <= scp_type <= DATA_TYPE['wander-cn']:
+        return parse_wander_html(pq_doc, scp_type)
     elif scp_type == DATA_TYPE['contest-archive-item'] or scp_type == DATA_TYPE['contest-archive-cn-item'] \
             or scp_type == DATA_TYPE['canon_item'] or scp_type == DATA_TYPE['series-archive-item']:
         return parse_collection_item_html(pq_doc, scp_type)
-    elif DATA_TYPE['contest-archive-cn-item'] < scp_type <= DATA_TYPE['series-archive-cn']:
-        return parse_story_series_html(pq_doc, scp_type)
     elif scp_type == DATA_TYPE['scp-international']:
         return parse_international_page(pq_doc)
 
@@ -100,6 +104,7 @@ def parse_joke_and_ex_html(pq_doc, scp_type):
             'title': li.text(),
             'link': link,
             'scp_type': scp_type,
+            'sub_scp_type': '',
             'index': index
         }
         base_info_list.append(ScpBaseItem(new_article))
@@ -147,11 +152,46 @@ def parse_setting_html(pq_doc, scp_type):
             # 'snippet': div('div.canon-snippet').text(),
             # 'subtext': div('div.canon-snippet-subtext').text(),
             'scp_type': scp_type,
+            'sub_scp_type': '',
             'index': index
         }
         setting_list.append(ScpBaseItem(new_article))
         index += 1
     return setting_list
+
+
+def parse_goi_html(pq_doc):
+    art_list = []
+    index = 0
+    h2_parse_path = 'div.content-panel h2'
+    item_parse_path = 'div.list-pages-box li'
+    for h2 in list(pq_doc(h2_parse_path).items()):
+        link = h2('a').attr('href')
+        title = h2('a').text()
+        if link != '' and link is not None:
+            new_article = {
+                'title': title,
+                'link': link,
+                'scp_type': DATA_TYPE['goi'],
+                'sub_scp_type': '',
+                'index': index
+            }
+            art_list.append(ScpBaseItem(new_article))
+            index += 1
+    for item in list(pq_doc(item_parse_path).items()):
+        link = item('a').attr('href')
+        title = item('a').text()
+        if link != '' and link is not None:
+            new_article = {
+                'title': title,
+                'link': link,
+                'scp_type': DATA_TYPE['goi'],
+                'sub_scp_type': '',
+                'index': index
+            }
+            art_list.append(ScpBaseItem(new_article))
+            index += 1
+    return art_list
 
 
 art_index = 0
@@ -192,6 +232,7 @@ def parse_contest_list_html(pq_doc):
                 'title': last_contest_name,
                 'link': last_contest_link,
                 'scp_type': DATA_TYPE['contest-archive'],
+                'sub_scp_type': '',
                 # 'creator': tds[1].text(),
                 'index': index
             }
@@ -213,12 +254,29 @@ def parse_contest_cn_html(pq_doc):
             'title': contest_a.text(),
             'link': contest_a.attr('href'),
             'scp_type': DATA_TYPE['contest-archive-cn'],
-            'creator': list(current_holder('a').items())[1].text(),
+            'sub_scp_type': '',
+            # 'creator': list(current_holder('a').items())[1].text(),
             'index': index
         }
         index += 1
         contest_list.append(ScpBaseItem(new_contest))
     return contest_list
+
+
+def parse_wander_html(pq_doc, scp_type):
+    wander_list = []
+    index = 0
+    for a in list(pq_doc('a.book').items()):
+        new_article = {
+            'title': a('span.title').text(),
+            'link': a.attr('href'),
+            'scp_type': scp_type,
+            'sub_scp_type': '',
+            'index': index
+        }
+        wander_list.append(ScpBaseItem(new_article))
+        index += 1
+    return wander_list
 
 
 story_index = 0
@@ -235,6 +293,7 @@ def parse_story_series_html(pq_doc, scp_type):
             # 'author': tds[1].text(),
             # 'snippet': tds[2].text(),
             'scp_type': scp_type,
+            'sub_scp_type': '',
             'index': story_index
         }
         story_index += 1

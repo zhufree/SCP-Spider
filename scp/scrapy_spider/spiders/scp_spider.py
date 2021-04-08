@@ -1,7 +1,7 @@
 from pyquery import PyQuery as pq
 from .constants import DATA_TYPE, HEADERS, SERIES_ENDPOINTS, SERIES_CN_ENDPOINTS, LIBRARY_PAGE_ENDPOINTS, ENDPOINTS, \
     REVERSE_ENDPOINTS, INFO_PAGE_ENDPOINTS, SERIES_STORY_ENDPOINTS, REPORT_ENDPOINTS, DB_NAME, URL_PARAMS, \
-    CN_ANOMALOUS_PAGE_ENDPOINTS, ART_ENDPOINTS
+    CN_ANOMALOUS_PAGE_ENDPOINTS, ART_ENDPOINTS, CN_SERIES_STORY_ENDPOINTS
 from ..items import *
 from .parse import parse_html
 import sqlite3
@@ -15,6 +15,8 @@ def get_type_by_url(url):
         return DATA_TYPE['scp-series-cn']
     elif url in SERIES_STORY_ENDPOINTS:
         return DATA_TYPE['series-archive']
+    elif url in CN_SERIES_STORY_ENDPOINTS:
+        return DATA_TYPE['series-archive-cn']
     elif url in LIBRARY_PAGE_ENDPOINTS:
         return DATA_TYPE['library-single-page']
     elif url in REPORT_ENDPOINTS:
@@ -85,7 +87,8 @@ class ScpListSpider(scrapy.Spider):
     collection_list_url = SERIES_STORY_ENDPOINTS
 
     start_urls = SERIES_CN_ENDPOINTS + SERIES_ENDPOINTS
-                 # + item_list_urls + collection_list_url
+
+    # + item_list_urls + collection_list_url
 
     # start_urls = [ENDPOINTS['scp-ex-cn']]  # 漏抓补充
 
@@ -121,7 +124,8 @@ class ScpTestSpider(scrapy.Spider):
     name = "test"
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
-    start_urls = ART_ENDPOINTS
+    start_urls = list(ENDPOINTS.values())
+
     # start_urls = list(ENDPOINTS.values())
 
     def parse(self, response):
