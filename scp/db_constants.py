@@ -1,6 +1,6 @@
-CATE_DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\scp_category_v2.db'
-DETAIL_DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\scp_detail_v2.db'
-TEST_DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\test_scp.db'
+CATE_DB_NAME = 'E:\\SCP-Spider\\scp\\scp_category_v2.db'
+DETAIL_DB_NAME = 'E:\\SCP-Spider\\scp\\scp_detail_v2.db'
+TEST_DB_NAME = 'E:\\SCP-Spider\\scp\\test_scp.db'
 # 先不用这两个字段
 # [contest_name] TEXT, 
 # [contest_link] TEXT
@@ -8,12 +8,11 @@ TEST_DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\test_scp.db'
 # scp表结构
 CREATE_DB_SCP_SQL = '''
 CREATE TABLE [scps](
-  [_id] INTEGER PRIMARY KEY AUTOINCREMENT, 
-  [_index] INTEGER,
+  [_id] INTEGER PRIMARY KEY NOT NULL AUTOINCREMENT, 
+  [_index] INTEGER NOT NULL,
   [title] TEXT NOT NULL, 
   [link] TEXT NOT NULL, 
-  [download_type] INTEGER, 
-  [scp_type] INTEGER, 
+  [scp_type] INTEGER NOT NULL, 
   [author] TEXT, 
   [created_time] TEXT, 
   [sub_scp_type] TEXT);

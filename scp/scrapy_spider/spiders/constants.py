@@ -6,9 +6,9 @@ HEADERS = {
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
 }
 
-CATE_DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\scp_category_v2.db'
-DETAIL_DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\scp_detail_v2.db'
-TEST_DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\test_scp.db'
+CATE_DB_NAME = 'E:\\SCP-Spider\\scp\\scp_category_v2.db'
+DETAIL_DB_NAME = 'E:\\SCP-Spider\\scp\\scp_detail_v2.db'
+TEST_DB_NAME = 'E:\\SCP-Spider\\scp\\test_scp.db'
 
 # 先不用这两个字段
 # [contest_name] TEXT, 
@@ -18,11 +18,10 @@ TEST_DB_NAME = 'E:\\py-project\\SCP-Spider\\scp\\test_scp.db'
 CREATE_DB_SCP_SQL = '''
 CREATE TABLE [scps](
   [_id] INTEGER PRIMARY KEY AUTOINCREMENT, 
-  [_index] INTEGER,
+  [_index] INTEGER NOT NULL,
   [title] TEXT NOT NULL, 
   [link] TEXT NOT NULL, 
-  [download_type] INTEGER, 
-  [scp_type] INTEGER, 
+  [scp_type] INTEGER NOT NULL, 
   [author] TEXT, 
   [created_time] TEXT, 
   [sub_scp_type] TEXT);
@@ -97,6 +96,7 @@ SERIES_ENDPOINTS = [
     '{_s_}://{_d_}/scp-series-4'.format(**URL_PARAMS),
     '{_s_}://{_d_}/scp-series-5'.format(**URL_PARAMS),
     '{_s_}://{_d_}/scp-series-6'.format(**URL_PARAMS),
+    '{_s_}://{_d_}/scp-series-7'.format(**URL_PARAMS),
 ]
 
 # scp-cn系列目录页面
@@ -210,8 +210,7 @@ ENDPOINTS = {
     'scp-international': '{_s_}://{_d_}/scp-international'.format(**URL_PARAMS)
 }
 
-LIST_ENDPOINTS = list(ENDPOINTS.values()) + CN_SERIES_STORY_ENDPOINTS + SERIES_STORY_ENDPOINTS + ART_ENDPOINTS + REPORT_ENDPOINTS+\
-                 SERIES_CN_ENDPOINTS + SERIES_ENDPOINTS
+LIST_ENDPOINTS = list(ENDPOINTS.values()) + CN_SERIES_STORY_ENDPOINTS + SERIES_STORY_ENDPOINTS + ART_ENDPOINTS + REPORT_ENDPOINTS + SERIES_CN_ENDPOINTS + SERIES_ENDPOINTS
 
 REVERSE_ENDPOINTS = dict(zip(ENDPOINTS.values(), ENDPOINTS.keys()))
 

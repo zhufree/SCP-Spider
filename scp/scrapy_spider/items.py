@@ -19,8 +19,6 @@ class ScpBaseItem(scrapy.Item):
     scp_type = scrapy.Field()
     sub_scp_type = scrapy.Field()
     # get when scrapy detail
-    # change by sql query and may change when needed
-    download_type = scrapy.Field()
 
 
 # class ScpTaleItem(ScpBaseItem):

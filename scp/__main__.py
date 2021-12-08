@@ -3,6 +3,7 @@
 from .core import init_database, crawl_this_spider
 import sys
 
+# 2021.12.8 last update category
 # python -m scp test
 options = sys.argv[1:]
 init_database()

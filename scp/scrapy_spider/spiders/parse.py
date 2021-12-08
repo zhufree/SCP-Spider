@@ -41,12 +41,15 @@ def parse_html(pq_doc, scp_type):
 # scp系列
 def parse_series_html(pq_doc, scp_type):
     base_info_list = []
-    end_index = -3 if scp_type == DATA_TYPE['scp-series'] else -1
-    for ul in list(pq_doc('div#page-content ul').items())[1:end_index]:
+    end_index = -3 if scp_type == DATA_TYPE['scp-series'] else -2
+    start_index = 2 if scp_type == DATA_TYPE['scp-series'] else 1
+    for ul in list(pq_doc('div#page-content ul').items())[start_index:end_index]:
         for li in ul('li').items():
             link = li('a').attr('href')
             if link == '/1231-warning':
                 link = '/scp-1231'
+            if link == None:
+                link = '/'
             if 'scp-wiki-cn.wikidot.com' in link:
                 link = link[30:]
             link_part = link.split('-')
