@@ -8,7 +8,7 @@ TEST_DB_NAME = 'E:\\SCP-Spider\\scp\\test_scp.db'
 # scp表结构
 CREATE_DB_SCP_SQL = '''
 CREATE TABLE [scps](
-  [_id] INTEGER PRIMARY KEY NOT NULL AUTOINCREMENT, 
+  [_id] INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL , 
   [_index] INTEGER NOT NULL,
   [title] TEXT NOT NULL, 
   [link] TEXT NOT NULL, 

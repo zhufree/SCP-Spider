@@ -27,11 +27,13 @@ def write_to_db(cate_cur, detail_cur, scp_item):
     """
     try:
         link = scp_item['link']
-        if len(link) == 1 or ('http' in link and 'http://scp-wiki-cn.wikidot.com' not in link):
+        if len(link) <= 1 or ('http' in link and 'scp-wiki-cn.wikidot.com' not in link):
             return
         else:
-            if 'http://scp-wiki-cn.wikidot.com' in link:
-                link = link[30:]
+            if 'https://scp-wiki-cn.wikidot.com' in link:
+                link = link.replace('https://scp-wiki-cn.wikidot.com', '')
+            elif 'http://scp-wiki-cn.wikidot.com' in link:
+                link = link.replace('http://scp-wiki-cn.wikidot.com', '')
             detail_cur.execute('''insert or ignore into scp_detail (link) values (?)''', (link,))
         if type(scp_item) == ScpBaseItem:
             print(scp_item['title'])
@@ -82,8 +84,10 @@ class ScpSpiderPipeline(object):
         if type(item) == ScpDetailItem:
             update_detail_in_db(self.detail_cur, item)
         else:
-            write_to_db(self.cate_cur, self.detail_cur, item)
-            # write_to_db(self.test_cur, self.test_cur, item)
+            if spider.name == 'test':
+                write_to_db(self.test_cur, self.test_cur, item)
+            else:
+                write_to_db(self.cate_cur, self.detail_cur, item)
         return item
 
     def item_completed(self, results, item, info):

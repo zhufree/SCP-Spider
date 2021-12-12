@@ -73,7 +73,7 @@ class ScpTestSpider(scrapy.Spider):
     name = "test"
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
-    start_urls = [ENDPOINTS['scp-international']]
+    start_urls = ['https://scp-wiki-cn.wikidot.com/scp-series-5']
 
     def parse(self, response):
         pq_doc = pq(response.body)
@@ -114,8 +114,8 @@ class ScpSinglePageSpider(scrapy.Spider):
             title = pq_doc('div#page-title').text() + response.url.split('/')[-1]
         else:
             title = pq_doc('div#page-title').text()
-        new_scp = ScpBaseItem(index=self.index, link=response.url[30:], title=title,
-                              scp_type=get_type_by_url(response.url), sub_scp_type='')
+        new_scp = ScpBaseItem(index=self.index, link=response.url.replace('https://','').replace('http://','').replace('scp-wiki-cn.wikidot.com', ''),
+            title=title, scp_type=get_type_by_url(response.url), sub_scp_type='')
         self.index += 1
         yield new_scp
 
@@ -130,10 +130,10 @@ class ScpDetailSpider(scrapy.Spider):
     handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
 
     def parse(self, response):
+        link = response.url.replace('https://','').replace('http://','').replace('scp-wiki-cn.wikidot.com', '')
         if response.status != 404:
             detail_dom = response.css('div#page-content')[0]
             tags = [a.extract() for a in response.css('div.page-tags>span>a::text')]
-            link = response.url[30:]
             if link == '/taboo':
                 link = '/scp-4000'
             if link == '/numbered':
@@ -142,7 +142,7 @@ class ScpDetailSpider(scrapy.Spider):
             detail_item = ScpDetailItem(link=link, detail=detail_dom.extract().replace('  ', '').replace('\n', ''),
                                         not_found=0, tags=','.join(tags))
         else:
-            detail_item = ScpDetailItem(link=response.url[30:], detail="null", not_found=1, tags='')
+            detail_item = ScpDetailItem(link=link, detail="null", not_found=1, tags='')
         yield detail_item
 
 
@@ -152,7 +152,6 @@ class ScpOffsetSpider(scrapy.Spider):
     """
     name = 'offset'
     allowed_domains = 'scp-wiki-cn.wikidot.com'
-    # 根据download_type分一下
     start_urls = [('{_s_}://{_d_}' + link + '/offset/1').format(**URL_PARAMS) for link in
                   get_all_link()]
     handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
@@ -162,7 +161,7 @@ class ScpOffsetSpider(scrapy.Spider):
         if response.status != 404 and len(list(dom.find('#page-content .list-pages-box .list-pages-item'))) > 0:
             detail_dom = response.css('div#page-content')[0]
             offset_index = int(response.url.split('/')[-1])  # .../scp-xxx/offset/x
-            link = response.url[30:]
+            link = response.url.replace('https://','').replace('http://','').replace('scp-wiki-cn.wikidot.com', '')
             detail_item = ScpDetailItem(link=link, detail=detail_dom.extract().replace('  ', '').replace('\n', ''),
                                         not_found=0)
             yield detail_item

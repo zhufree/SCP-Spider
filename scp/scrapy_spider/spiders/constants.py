@@ -38,7 +38,7 @@ CREATE TABLE [scp_detail](
 
 
 URL_PARAMS = {
-    '_s_': 'http',
+    '_s_': 'https',
     '_d_': 'scp-wiki-cn.wikidot.com',
 }
 
@@ -210,7 +210,9 @@ ENDPOINTS = {
     'scp-international': '{_s_}://{_d_}/scp-international'.format(**URL_PARAMS)
 }
 
-LIST_ENDPOINTS = list(ENDPOINTS.values()) + CN_SERIES_STORY_ENDPOINTS + SERIES_STORY_ENDPOINTS + ART_ENDPOINTS + REPORT_ENDPOINTS + SERIES_CN_ENDPOINTS + SERIES_ENDPOINTS
+LIST_ENDPOINTS = list(ENDPOINTS.values()) + ART_ENDPOINTS + REPORT_ENDPOINTS \
+    + SERIES_STORY_ENDPOINTS + CN_SERIES_STORY_ENDPOINTS \
+    + SERIES_CN_ENDPOINTS + SERIES_ENDPOINTS
 
 REVERSE_ENDPOINTS = dict(zip(ENDPOINTS.values(), ENDPOINTS.keys()))
 
