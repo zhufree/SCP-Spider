@@ -21,7 +21,7 @@ CREATE TABLE [scps](
 # scp正文内容表结构，用link检索
 CREATE_DB_DETAIL_SQL = '''
 CREATE TABLE [scp_detail](
-  [link] TEXT PRIMARY KEY UNIQUE, 
+  [link] TEXT PRIMARY KEY UNIQUE NOT NULL, 
   [not_found] INTEGER, 
   [detail] TEXT, 
   [tags] TEXT);

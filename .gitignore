@@ -102,9 +102,4 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-scp/scp.db
-scp/scp_collection.csv
-scp/scp_detail.csv
-scp/scps.csv
-scp/split-0-detail.csv
-scp/split-1-detail.csv
+*.db
