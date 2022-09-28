@@ -58,14 +58,17 @@ def parse_series_html(pq_doc, scp_type):
             link_part = link.split('-')
             index = -1
             if len(link_part) > 1:
+                if link_part[1] == '7bus':
+                    link_part[1] = 7805
                 index = int(link_part[1 if scp_type == DATA_TYPE['scp-series'] else 2])
+
             new_article = {
                 'title': li.text(),
                 'link': link,
                 'scp_type': scp_type,
                 'sub_scp_type': '',
                 'index': index
-            }
+            } 
             base_info_list.append(ScpBaseItem(new_article))
     return base_info_list
 

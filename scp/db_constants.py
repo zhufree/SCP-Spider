@@ -1,6 +1,7 @@
-CATE_DB_NAME = 'E:\\SCP-Spider\\scp\\scp_category_v2.db'
-DETAIL_DB_NAME = 'E:\\SCP-Spider\\scp\\scp_detail_v2.db'
-TEST_DB_NAME = 'E:\\SCP-Spider\\scp\\test_scp.db'
+base_dir = 'E:\\py-project\\SCP-Spider\\scp\\'
+CATE_DB_NAME = base_dir + 'scp_category_v2.db'
+DETAIL_DB_NAME = base_dir + 'scp_detail_v2.db'
+TEST_DB_NAME = base_dir + 'test_scp.db'
 # 先不用这两个字段
 # [contest_name] TEXT, 
 # [contest_link] TEXT

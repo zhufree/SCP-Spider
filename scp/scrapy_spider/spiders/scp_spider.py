@@ -73,7 +73,7 @@ class ScpTestSpider(scrapy.Spider):
     name = "test"
     allowed_domains = 'scp-wiki-cn.wikidot.com'
 
-    start_urls = ['https://scp-wiki-cn.wikidot.com/scp-series-5']
+    start_urls = ['https://scp-wiki-cn.wikidot.com/scp-series-8']
 
     def parse(self, response):
         pq_doc = pq(response.body)
@@ -163,7 +163,7 @@ class ScpOffsetSpider(scrapy.Spider):
             offset_index = int(response.url.split('/')[-1])  # .../scp-xxx/offset/x
             link = response.url.replace('https://','').replace('http://','').replace('scp-wiki-cn.wikidot.com', '')
             detail_item = ScpDetailItem(link=link, detail=detail_dom.extract().replace('  ', '').replace('\n', ''),
-                                        not_found=0)
+                                        not_found=0, tags='')
             yield detail_item
             offset_request = scrapy.Request(response.url[0:-1] + str(offset_index + 1), callback=parse_offset,
                                             headers=HEADERS, dont_filter=True)
@@ -180,7 +180,7 @@ def parse_offset(response):
         title = response.css('div#page-title')[0].css('::text').extract()[0].strip() + '-offset-' + str(offset_index)
         offset_item = ScpBaseItem(index=0, link=link, title=title, scp_type=DATA_TYPE['offset'])
         detail_item = ScpDetailItem(link=link, detail=detail_dom.extract().replace('  ', '').replace('\n', ''),
-                                    not_found=0)
+                                    not_found=0, tags='')
         yield offset_item
         yield detail_item
         offset_request = scrapy.Request(response.url[0:-1] + str(offset_index + 1), callback=parse_offset,

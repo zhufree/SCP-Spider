@@ -5,10 +5,10 @@ HEADERS = {
     'Accept-Encoding': 'gzip, deflate, br',
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
 }
-
-CATE_DB_NAME = 'E:\\SCP-Spider\\scp\\scp_category_v2.db'
-DETAIL_DB_NAME = 'E:\\SCP-Spider\\scp\\scp_detail_v2.db'
-TEST_DB_NAME = 'E:\\SCP-Spider\\scp\\test_scp.db'
+base_dir = 'E:\\py-project\\SCP-Spider\\scp\\'
+CATE_DB_NAME = base_dir + 'scp_category_v2.db'
+DETAIL_DB_NAME = base_dir + 'scp_detail_v2.db'
+TEST_DB_NAME = base_dir + 'test_scp.db'
 
 # 先不用这两个字段
 # [contest_name] TEXT, 
@@ -97,6 +97,7 @@ SERIES_ENDPOINTS = [
     '{_s_}://{_d_}/scp-series-5'.format(**URL_PARAMS),
     '{_s_}://{_d_}/scp-series-6'.format(**URL_PARAMS),
     '{_s_}://{_d_}/scp-series-7'.format(**URL_PARAMS),
+    '{_s_}://{_d_}/scp-series-8'.format(**URL_PARAMS),
 ]
 
 # scp-cn系列目录页面
