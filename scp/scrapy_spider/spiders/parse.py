@@ -60,7 +60,10 @@ def parse_series_html(pq_doc, scp_type):
             if len(link_part) > 1:
                 if link_part[1] == '7bus':
                     link_part[1] = 7805
-                index = int(link_part[1 if scp_type == DATA_TYPE['scp-series'] else 2])
+                if scp_type == DATA_TYPE['scp-series']:
+                    index = int(link_part[1])
+                elif scp_type == DATA_TYPE['scp-series-cn'] and len(link_part) > 2:
+                    index = int(link_part[2])
 
             new_article = {
                 'title': li.text(),

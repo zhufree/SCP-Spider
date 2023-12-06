@@ -5,7 +5,7 @@ HEADERS = {
     'Accept-Encoding': 'gzip, deflate, br',
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
 }
-base_dir = 'E:\\py-project\\SCP-Spider\\scp\\'
+base_dir = 'E:\\SCP-Spider\\'
 CATE_DB_NAME = base_dir + 'scp_category_v2.db'
 DETAIL_DB_NAME = base_dir + 'scp_detail_v2.db'
 TEST_DB_NAME = base_dir + 'test_scp.db'
@@ -36,11 +36,7 @@ CREATE TABLE [scp_detail](
   [tags] TEXT);
 '''
 
-
-URL_PARAMS = {
-    '_s_': 'https',
-    '_d_': 'scp-wiki-cn.wikidot.com',
-}
+URL_BASE = 'https://scp-wiki-cn.wikidot.com'
 
 DATA_TYPE = {
 
@@ -90,125 +86,140 @@ DATA_TYPE = {
 
 # scp系列目录页面
 SERIES_ENDPOINTS = [
-    '{_s_}://{_d_}/scp-series'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/scp-series-2'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/scp-series-3'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/scp-series-4'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/scp-series-5'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/scp-series-6'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/scp-series-7'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/scp-series-8'.format(**URL_PARAMS),
+    f'{URL_BASE}/scp-series',
+    f'{URL_BASE}/scp-series-2',
+    f'{URL_BASE}/scp-series-3',
+    f'{URL_BASE}/scp-series-4',
+    f'{URL_BASE}/scp-series-5',
+    f'{URL_BASE}/scp-series-6',
+    f'{URL_BASE}/scp-series-7',
+    f'{URL_BASE}/scp-series-8',
 ]
 
 # scp-cn系列目录页面
 SERIES_CN_ENDPOINTS = [
-    '{_s_}://{_d_}/scp-series-cn'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/scp-series-cn-2'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/scp-series-cn-3'.format(**URL_PARAMS),
+    f'{URL_BASE}/scp-series-cn',
+    f'{URL_BASE}/scp-series-cn-2',
+    f'{URL_BASE}/scp-series-cn-3',
 ]
 
 # 图书馆单页
 LIBRARY_PAGE = [
     # 用户推荐清单
-    '{_s_}://{_d_}/user-curated-lists'.format(**URL_PARAMS),
+    f'{URL_BASE}/user-curated-lists',
     # 异常物品记录
-    '{_s_}://{_d_}/log-of-anomalous-items'.format(**URL_PARAMS),
+    f'{URL_BASE}/log-of-anomalous-items',
     # 超常现象记录
-    '{_s_}://{_d_}/log-of-extranormal-events'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/log-of-extranormal-events-cn'.format(**URL_PARAMS),
+    f'{URL_BASE}/log-of-extranormal-events',
+    f'{URL_BASE}/log-of-extranormal-events-cn',
     # 未解明地點記錄
-    '{_s_}://{_d_}/log-of-unexplained-locations'.format(**URL_PARAMS),
+    f'{URL_BASE}/log-of-unexplained-locations',
 ]
 
 # 异常物品记录-cn, 每个是单页面
 CN_ANOMALOUS_PAGE = [
-    '{_s_}://{_d_}/log-of-anomalous-items-cn/p/{index}'.format(**URL_PARAMS, index=i) for i in range(1, 8)
+    f'{URL_BASE}/log-of-anomalous-items-cn/p/{index}' for index in range(1, 8)
 ]
 
 SHORT_STORY_PAGE = [
-    '{_s_}://{_d_}/short-stories/p/{index}'.format(**URL_PARAMS, index=i) for i in range(1, 4)
+    f'{URL_BASE}/short-stories/p/{index}' for index in range(1, 4)
 ]
 
 # 单页面列表，直接抓内容
 INFO_PAGE = [
     # 背景资料
     # 关于基金会
-    '{_s_}://{_d_}/about-the-scp-foundation'.format(**URL_PARAMS),
+    f'{URL_BASE}/about-the-scp-foundation',
     # 相关组织
-    '{_s_}://{_d_}/groups-of-interest'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/groups-of-interest-cn'.format(**URL_PARAMS),
+    f'{URL_BASE}/groups-of-interest',
+    f'{URL_BASE}/groups-of-interest-cn',
     # 項目等級
-    '{_s_}://{_d_}/object-classes'.format(**URL_PARAMS),
+    f'{URL_BASE}/object-classes',
     # 人员及角色档案
-    '{_s_}://{_d_}/personnel-and-character-dossier'.format(**URL_PARAMS),
+    f'{URL_BASE}/personnel-and-character-dossier',
     # 安保许可等级
-    '{_s_}://{_d_}/security-clearance-levels'.format(**URL_PARAMS),
+    f'{URL_BASE}/security-clearance-levels',
     # 安保设施地点
-    '{_s_}://{_d_}/secure-facilities-locations'.format(**URL_PARAMS),
-    '{_s_}://{_d_}/secure-facilities-locations-cn'.format(**URL_PARAMS),
+    f'{URL_BASE}/secure-facilities-locations',
+    f'{URL_BASE}/secure-facilities-locations-cn',
     # 机动特遣队
-    '{_s_}://{_d_}/task-forces'.format(**URL_PARAMS),
+    f'{URL_BASE}/task-forces',
 
     # 指导
     # 指导中心
-    '{_s_}://{_d_}/guide-hub'.format(**URL_PARAMS),
+    f'{URL_BASE}/guide-hub',
     # 常见问题解答
-    '{_s_}://{_d_}/faq'.format(**URL_PARAMS),
+    f'{URL_BASE}/faq',
     # 给新手的指南
-    '{_s_}://{_d_}/guide-for-newbies'.format(**URL_PARAMS),
+    f'{URL_BASE}/guide-for-newbies',
     # 如何撰写一篇SCP文档
-    '{_s_}://{_d_}/how-to-write-an-scp'.format(**URL_PARAMS),
+    f'{URL_BASE}/how-to-write-an-scp',
+    # 图像使用原则
+    f'{URL_BASE}/image-use-policy',
+    # 授权指南
+    f'{URL_BASE}/licensing-guide',
+    # 标签指导
+    f'{URL_BASE}/tag-guide',
+    # 已翻译文档發佈及搬运指南
+    f'{URL_BASE}/translation-movement-guide',
+    # SCP-CN翻译发布与校对规范
+    f'{URL_BASE}/translation-rules',
+    # 站规
+    f'{URL_BASE}/site-rules',
+    # 删帖指导
+    f'{URL_BASE}/deletions-guide',
+    # 批評守則
+    f'{URL_BASE}/criticism-policy',
 ]
 
 # 实验记录3， 探索报告，事故/事件报告，访谈记录，补充材料5，列表
 # 要做去重处理
 REPORT_ENDPOINTS = [
-    '{_s_}://{_d_}/incident-reports-eye-witness-interviews-and-personal-logs/p/{index}'.format(
-        **URL_PARAMS, index=i) for i in range(1, 6)
+    f'{URL_BASE}/incident-reports-eye-witness-interviews-and-personal-logs/p/{index}' for index in range(1, 6)
 ]
 
 # art，列表，要去重
 ART_ENDPOINTS = [
-    '{_s_}://{_d_}/scp-artwork-hub/p/{index}'.format(**URL_PARAMS, index=i) for i in range(1, 10)
+    f'{URL_BASE}/scp-artwork-hub/p/{index}' for index in range(1, 10)
 ]
 
 # 故事系列列表目录页
 SERIES_STORY_ENDPOINTS = [
-    '{_s_}://{_d_}/series-archive/p/{index}'.format(**URL_PARAMS, index=i) for i in range(1, 5)
+    f'{URL_BASE}/series-archive/p/{index}' for index in range(1, 5)
 ]
 CN_SERIES_STORY_ENDPOINTS = [
-    '{_s_}://{_d_}/series-archive-cn/p/{index}'.format(**URL_PARAMS, index=i) for i in range(1, 3)
+    f'{URL_BASE}/series-archive-cn/p/{index}' for index in range(1, 3)
 ]
 
 # 其他列表页面
 ENDPOINTS = {
     # joke
-    'joke-scps': '{_s_}://{_d_}/joke-scps'.format(**URL_PARAMS),
-    'joke-scps-cn': '{_s_}://{_d_}/joke-scps-cn'.format(**URL_PARAMS),
+    'joke-scps': f'{URL_BASE}/joke-scps',
+    'joke-scps-cn': f'{URL_BASE}/joke-scps-cn',
     # 已解明
-    'scp-ex': '{_s_}://{_d_}/scp-ex'.format(**URL_PARAMS),
-    'scp-ex-cn': '{_s_}://{_d_}/scp-ex-cn'.format(**URL_PARAMS),
+    'scp-ex': f'{URL_BASE}/scp-ex',
+    'scp-ex-cn': f'{URL_BASE}/scp-ex-cn',
 
-    'tales-by-page-name': '{_s_}://{_d_}/tales-by-page-name'.format(**URL_PARAMS),
-    'tales-cn-by-page-name': '{_s_}://{_d_}/tales-cn-by-page-name'.format(**URL_PARAMS),
+    'tales-by-page-name': f'{URL_BASE}/tales-by-page-name',
+    'tales-cn-by-page-name': f'{URL_BASE}/tales-cn-by-page-name',
     # 设定中心
-    'canon-hub': '{_s_}://{_d_}/canon-hub'.format(**URL_PARAMS),
-    'canon-hub-cn': '{_s_}://{_d_}/canon-hub-cn'.format(**URL_PARAMS),
+    'canon-hub': f'{URL_BASE}/canon-hub',
+    'canon-hub-cn': f'{URL_BASE}/canon-hub-cn',
     # 中国分部故事系列
-    'series-archive-cn': '{_s_}://{_d_}/series-archive-cn'.format(**URL_PARAMS),
+    'series-archive-cn': f'{URL_BASE}/series-archive-cn',
 
     # 图书馆
     # GOI
-    'goi': '{_s_}://{_d_}/goi-formats'.format(**URL_PARAMS),
+    'goi': f'{URL_BASE}/goi-formats',
     # 征文竞赛
-    'contest-archive': '{_s_}://{_d_}/contest-archive'.format(**URL_PARAMS),
-    'contest-archive-cn': '{_s_}://{_d_}/contest-archive-cn'.format(**URL_PARAMS),
+    'contest-archive': f'{URL_BASE}/contest-archive',
+    'contest-archive-cn': f'{URL_BASE}/contest-archive-cn',
     # 放逐者图书馆
-    'wander': '{_s_}://{_d_}/wanderers:the-index'.format(**URL_PARAMS),
-    'wander-cn': '{_s_}://{_d_}/wanderers:the-index-cn'.format(**URL_PARAMS),
+    'wander': f'{URL_BASE}/wanderers:the-index',
+    'wander-cn': f'{URL_BASE}/wanderers:the-index-cn',
 
     # 国际版
-    'scp-international': '{_s_}://{_d_}/scp-international'.format(**URL_PARAMS)
+    'scp-international': f'{URL_BASE}/scp-international'
 }
 
 LIST_ENDPOINTS = list(ENDPOINTS.values()) + ART_ENDPOINTS + REPORT_ENDPOINTS \

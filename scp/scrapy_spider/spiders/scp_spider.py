@@ -1,7 +1,7 @@
 from pyquery import PyQuery as pq
 from .constants import DATA_TYPE, HEADERS, SERIES_ENDPOINTS, SERIES_CN_ENDPOINTS, LIBRARY_PAGE, ENDPOINTS, \
     REVERSE_ENDPOINTS, INFO_PAGE, SERIES_STORY_ENDPOINTS, REPORT_ENDPOINTS, CATE_DB_NAME, DETAIL_DB_NAME, \
-    URL_PARAMS, CN_ANOMALOUS_PAGE, ART_ENDPOINTS, CN_SERIES_STORY_ENDPOINTS, LIST_ENDPOINTS, SHORT_STORY_PAGE
+    URL_BASE, CN_ANOMALOUS_PAGE, ART_ENDPOINTS, CN_SERIES_STORY_ENDPOINTS, LIST_ENDPOINTS, SHORT_STORY_PAGE
 from ..items import *
 from .parse import parse_html
 import sqlite3
@@ -126,7 +126,7 @@ class ScpDetailSpider(scrapy.Spider):
     """
     name = 'detail'
     allowed_domains = 'scp-wiki-cn.wikidot.com'
-    start_urls = [('{_s_}://{_d_}' + link).format(**URL_PARAMS) for link in get_empty_link_for_detail()]
+    start_urls = [(URL_BASE + link) for link in get_empty_link_for_detail()]
     handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
 
     def parse(self, response):
@@ -152,8 +152,7 @@ class ScpOffsetSpider(scrapy.Spider):
     """
     name = 'offset'
     allowed_domains = 'scp-wiki-cn.wikidot.com'
-    start_urls = [('{_s_}://{_d_}' + link + '/offset/1').format(**URL_PARAMS) for link in
-                  get_all_link()]
+    start_urls = [(URL_BASE + link + '/offset/1') for link in get_all_link()]
     handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
 
     def parse(self, response):

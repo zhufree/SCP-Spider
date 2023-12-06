@@ -1,4 +1,4 @@
-base_dir = 'E:\\py-project\\SCP-Spider\\scp\\'
+base_dir = 'E:\\SCP-Spider\\'
 CATE_DB_NAME = base_dir + 'scp_category_v2.db'
 DETAIL_DB_NAME = base_dir + 'scp_detail_v2.db'
 TEST_DB_NAME = base_dir + 'test_scp.db'
