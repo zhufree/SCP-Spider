@@ -1,188 +1,300 @@
-from pyquery import PyQuery as pq
-from .constants import DATA_TYPE, HEADERS, SERIES_ENDPOINTS, SERIES_CN_ENDPOINTS, LIBRARY_PAGE, ENDPOINTS, \
-    REVERSE_ENDPOINTS, INFO_PAGE, SERIES_STORY_ENDPOINTS, REPORT_ENDPOINTS, CATE_DB_NAME, DETAIL_DB_NAME, \
-    URL_BASE, CN_ANOMALOUS_PAGE, ART_ENDPOINTS, CN_SERIES_STORY_ENDPOINTS, LIST_ENDPOINTS, SHORT_STORY_PAGE
-from ..items import *
-from .parse import parse_html
+# -*- coding: utf-8 -*-
+import re
 import sqlite3
 
+import scrapy
 
-# 根据url反向获取scp_type
+from ..items import ScpBaseItem, ScpDetailItem
+from ..links import child_links, extra_page_urls, normalize_link, page_number
+from .constants import (
+    CN_SERIES_PROBE_MAX,
+    DATA_TYPE,
+    DETAIL_DB_NAME,
+    HEADERS,
+    INFO_PAGE,
+    LIBRARY_PAGE,
+    LIST_SEED_URLS,
+    PAGINATED_SINGLE_PAGES,
+    SERIES_PROBE_MAX,
+    URL_BASE,
+)
+from .parse import document_of, parse_html
+
+_TYPE_RULES = (
+    (re.compile(r"^/scp-series-cn(?:-\d+)?$"), "scp-series-cn"),
+    (re.compile(r"^/scp-series(?:-\d+)?$"), "scp-series"),
+    (re.compile(r"^/lost-scp-series$"), "scp-series"),
+    (re.compile(r"^/joke-scps-cn$"), "joke-scps-cn"),
+    (re.compile(r"^/joke-scps$"), "joke-scps"),
+    (re.compile(r"^/scp-ex-cn$"), "scp-ex-cn"),
+    (re.compile(r"^/scp-ex$"), "scp-ex"),
+    (re.compile(r"^/tales-cn-by-page-name$"), "tales-cn-by-page-name"),
+    (re.compile(r"^/tales-by-page-name$"), "tales-by-page-name"),
+    (re.compile(r"^/canon-hub-cn$"), "canon-hub-cn"),
+    (re.compile(r"^/canon-hub$"), "canon-hub"),
+    (re.compile(r"^/series-archive-cn$"), "series-archive-cn"),
+    (re.compile(r"^/series-archive$"), "series-archive"),
+    (re.compile(r"^/incident-reports-eye-witness-interviews-and-personal-logs$"), "reports-interviews-and-logs"),
+    (re.compile(r"^/scp-artwork-hub$"), "art"),
+    (re.compile(r"^/goi-formats$"), "goi"),
+    (re.compile(r"^/contest-archive-cn$"), "contest-archive-cn"),
+    (re.compile(r"^/contest-archive$"), "contest-archive"),
+    (re.compile(r"^/wanderers:the-index-cn$"), "wander-cn"),
+    (re.compile(r"^/wanderers:the-library-cn$"), "wander-cn"),
+    (re.compile(r"^/wanderers:the-index$"), "wander"),
+    (re.compile(r"^/scp-international$"), "scp-international"),
+    (re.compile(r"^/log-of-anomalous-items-cn$"), "log-of-anomalous-page-cn"),
+    (re.compile(r"^/short-stories$"), "short-story"),
+)
+
+_LIBRARY_PATHS = {normalize_link(url) for url in LIBRARY_PAGE}
+_INFO_PATHS = {normalize_link(url) for url in INFO_PAGE}
+_PAGINATED_SINGLE_PATHS = {normalize_link(url) for url in PAGINATED_SINGLE_PAGES}
+
+
+def catalog_path(url):
+    path = normalize_link(url) or ""
+    if not path and "://" not in url:
+        path = url.split("?")[0]
+    path = re.sub(r"/p/\d+$", "", path)
+    return path
+
+
 def get_type_by_url(url):
-    if url in SERIES_ENDPOINTS:
-        return DATA_TYPE['scp-series']
-    elif url in SERIES_CN_ENDPOINTS:
-        return DATA_TYPE['scp-series-cn']
-    elif url in SERIES_STORY_ENDPOINTS:
-        return DATA_TYPE['series-archive']
-    elif url in CN_SERIES_STORY_ENDPOINTS:
-        return DATA_TYPE['series-archive-cn']
-    elif url in LIBRARY_PAGE:
-        return DATA_TYPE['library-single-page']
-    elif url in REPORT_ENDPOINTS:
-        return DATA_TYPE['reports-interviews-and-logs']
-    elif url in CN_ANOMALOUS_PAGE:
-        return DATA_TYPE['log-of-anomalous-page-cn']
-    elif url in ART_ENDPOINTS:
-        return DATA_TYPE['art']
-    elif url in INFO_PAGE:
-        return DATA_TYPE['info-single-page']
-    elif url in SHORT_STORY_PAGE:
-        return DATA_TYPE['short-story']
-    elif url in ENDPOINTS.values():
-        return DATA_TYPE[REVERSE_ENDPOINTS[url]]
-    else:
-        return -1
+    path = catalog_path(url)
+    if path in _LIBRARY_PATHS:
+        return DATA_TYPE["library-single-page"]
+    if path in _INFO_PATHS:
+        return DATA_TYPE["info-single-page"]
+    for pattern, name in _TYPE_RULES:
+        if pattern.match(path):
+            return DATA_TYPE[name]
+    return -1
 
 
-# 获取detail表中内容为空的link
-def get_empty_link_for_detail():
+def series_url(kind, number):
+    if kind == "cn":
+        if number == 1:
+            return URL_BASE + "/scp-series-cn"
+        return "%s/scp-series-cn-%s" % (URL_BASE, number)
+    if number == 1:
+        return URL_BASE + "/scp-series"
+    return "%s/scp-series-%s" % (URL_BASE, number)
+
+
+def _empty_detail_links():
     con = sqlite3.connect(DETAIL_DB_NAME)
-    cur = con.cursor()
-    cur.execute('select link from scp_detail where detail is NULL;')
-    link_list = [t[0] for t in cur if 'http' not in t]
-    con.close()
-    return link_list
+    try:
+        rows = con.execute("SELECT link FROM scp_detail WHERE detail IS NULL")
+        return [row[0] for row in rows if row[0] and "http" not in row[0]]
+    finally:
+        con.close()
 
 
-# 获取detail表中404的link
-def get_404_link_for_detail():
+def _saved_child_links():
     con = sqlite3.connect(DETAIL_DB_NAME)
-    cur = con.cursor()
-    cur.execute('select link from scp_detail where not_found = 1;')
-    link_list = [t[0] for t in cur]
-    con.close()
-    return link_list
-
-
-# 根据download_type获取所有link
-def get_all_link():
-    con = sqlite3.connect(CATE_DB_NAME)
-    cur = con.cursor()
-    cur.execute('select link from scps;')
-    link_list = [t[0] for t in cur]
-    con.close()
-    return link_list
-    # return ['/scp-cn-1000']
+    try:
+        rows = con.execute(
+            "SELECT link, detail FROM scp_detail WHERE detail IS NOT NULL AND not_found IS NOT 1"
+        )
+        found = []
+        seen = set()
+        for link, detail in rows:
+            for child in child_links(link, detail or ""):
+                if child not in seen:
+                    seen.add(child)
+                    found.append(child)
+        return found
+    finally:
+        con.close()
 
 
 class ScpTestSpider(scrapy.Spider):
-    """
-    测试用
-    """
     name = "test"
-    allowed_domains = 'scp-wiki-cn.wikidot.com'
-
-    start_urls = ['https://scp-wiki-cn.wikidot.com/scp-series-8']
+    allowed_domains = ["scp-wiki-cn.wikidot.com"]
+    start_urls = [URL_BASE + "/scp-series"]
 
     def parse(self, response):
-        pq_doc = pq(response.body)
-        item_list = parse_html(pq_doc, get_type_by_url(response.url))
-        for info in item_list:
-            yield info
+        yield from emit_catalog(response)
 
 
 class ScpListSpider(scrapy.Spider):
-    """
-    抓取scp列表
-    """
-    name = "main"
-    allowed_domains = 'scp-wiki-cn.wikidot.com'
+    """Catalog pages. Series numbers and /p/N pages are discovered, not hard-coded."""
 
-    # 页面不多可以一次抓完
-    start_urls = LIST_ENDPOINTS
+    name = "main"
+    allowed_domains = ["scp-wiki-cn.wikidot.com"]
+    handle_httpstatus_list = [404]
+
+    def start_requests(self):
+        for url in LIST_SEED_URLS:
+            yield scrapy.Request(url, callback=self.parse, headers=HEADERS)
+        yield scrapy.Request(
+            series_url("en", 1),
+            callback=self.parse_series_chain,
+            headers=HEADERS,
+            meta={"kind": "en", "n": 1},
+        )
+        yield scrapy.Request(
+            series_url("cn", 1),
+            callback=self.parse_series_chain,
+            headers=HEADERS,
+            meta={"kind": "cn", "n": 1},
+        )
+
+    def parse_series_chain(self, response):
+        kind = response.meta["kind"]
+        number = response.meta["n"]
+        if response.status != 404:
+            yield from self.parse(response)
+            limit = CN_SERIES_PROBE_MAX if kind == "cn" else SERIES_PROBE_MAX
+            if number < limit:
+                yield scrapy.Request(
+                    series_url(kind, number + 1),
+                    callback=self.parse_series_chain,
+                    headers=HEADERS,
+                    meta={"kind": kind, "n": number + 1},
+                )
+        else:
+            self.logger.info("series chain %s stops at %s", kind, number)
 
     def parse(self, response):
-        pq_doc = pq(response.body)
-        item_list = parse_html(pq_doc, get_type_by_url(response.url))
-        for info in item_list:
-            yield info
+        if response.status == 404:
+            return
+        yield from emit_catalog(response)
+        for url in extra_page_urls(response.url, response.text):
+            yield scrapy.Request(url, callback=self.parse, headers=HEADERS)
 
 
 class ScpSinglePageSpider(scrapy.Spider):
-    """
-    抓取单页面
-    """
+    """Pages stored as one row each. Anomalous-item and short-story lists follow their pager."""
+
     name = "single"
-    allowed_domains = 'scp-wiki-cn.wikidot.com'
-    start_urls = LIBRARY_PAGE + INFO_PAGE + CN_ANOMALOUS_PAGE + SHORT_STORY_PAGE
-    index = 0
+    allowed_domains = ["scp-wiki-cn.wikidot.com"]
+    start_urls = LIBRARY_PAGE + INFO_PAGE + PAGINATED_SINGLE_PAGES
 
     def parse(self, response):
-        pq_doc = pq(response.body)
-        if response.url in SHORT_STORY_PAGE or response.url in CN_ANOMALOUS_PAGE:
-            title = pq_doc('div#page-title').text() + response.url.split('/')[-1]
-        else:
-            title = pq_doc('div#page-title').text()
-        new_scp = ScpBaseItem(index=self.index, link=response.url.replace('https://','').replace('http://','').replace('scp-wiki-cn.wikidot.com', ''),
-            title=title, scp_type=get_type_by_url(response.url), sub_scp_type='')
-        self.index += 1
-        yield new_scp
+        document = document_of(response.text)
+        title = document("#page-title").text().strip()
+        number = page_number(response.url)
+        if number > 1:
+            title = "%s %s" % (title, number)
+        link = normalize_link(response.url)
+        yield ScpBaseItem(
+            index=number,
+            link=link,
+            title=title or link,
+            scp_type=get_type_by_url(response.url),
+            sub_scp_type="",
+            author="",
+            created_time="",
+        )
+        if catalog_path(response.url) in _PAGINATED_SINGLE_PATHS:
+            for url in extra_page_urls(response.url, response.text):
+                yield scrapy.Request(url, callback=self.parse, headers=HEADERS)
 
 
 class ScpDetailSpider(scrapy.Spider):
-    """
-    根据链接抓取页面内容
-    """
-    name = 'detail'
-    allowed_domains = 'scp-wiki-cn.wikidot.com'
-    start_urls = [(URL_BASE + link) for link in get_empty_link_for_detail()]
-    handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
+    """Fill empty detail rows. Whitespace inside the article is kept."""
+
+    name = "detail"
+    allowed_domains = ["scp-wiki-cn.wikidot.com"]
+    handle_httpstatus_list = [404]
+
+    def start_requests(self):
+        for link in _empty_detail_links():
+            yield scrapy.Request(
+                URL_BASE + link,
+                callback=self.parse,
+                headers=HEADERS,
+                meta={"link": link},
+            )
 
     def parse(self, response):
-        link = response.url.replace('https://','').replace('http://','').replace('scp-wiki-cn.wikidot.com', '')
-        if response.status != 404:
-            detail_dom = response.css('div#page-content')[0]
-            tags = [a.extract() for a in response.css('div.page-tags>span>a::text')]
-            if link == '/taboo':
-                link = '/scp-4000'
-            if link == '/numbered':
-                link = '/scp-cn-1100'
-            # /scp-es-026 会跳转 '/scp-179'
-            detail_item = ScpDetailItem(link=link, detail=detail_dom.extract().replace('  ', '').replace('\n', ''),
-                                        not_found=0, tags=','.join(tags))
-        else:
-            detail_item = ScpDetailItem(link=link, detail="null", not_found=1, tags='')
-        yield detail_item
+        link = response.meta.get("link") or normalize_link(response.url)
+        if response.status == 404:
+            yield ScpDetailItem(link=link, detail="null", not_found=1, tags="")
+            return
+        content = response.css("div#page-content")
+        if not content:
+            self.logger.warning("no page-content on %s", link)
+            return
+        html = content.get()
+        tags = response.css("div.page-tags a::text").getall()
+        yield ScpDetailItem(
+            link=link,
+            detail=html,
+            not_found=0,
+            tags=",".join(tag.strip() for tag in tags if tag.strip()),
+        )
+        for child in child_links(link, html):
+            yield scrapy.Request(
+                URL_BASE + child,
+                callback=self.parse_child,
+                headers=HEADERS,
+                meta={"link": child, "parent": link},
+            )
+
+    def parse_child(self, response):
+        link = response.meta["link"]
+        parent = response.meta.get("parent") or link
+        if response.status == 404:
+            yield ScpDetailItem(link=link, detail="null", not_found=1, tags="")
+            return
+        content = response.css("div#page-content")
+        if not content:
+            return
+        html = content.get()
+        title = ""
+        heading = response.css("div#page-title::text").get()
+        if heading:
+            title = heading.strip()
+        if "/offset/" in link:
+            title = "%s-offset-%s" % (title or parent, link.rsplit("/", 1)[-1])
+        yield ScpBaseItem(
+            index=0,
+            link=link,
+            title=title or link,
+            scp_type=DATA_TYPE["offset"],
+            sub_scp_type="",
+            author="",
+            created_time="",
+        )
+        yield ScpDetailItem(link=link, detail=html, not_found=0, tags="")
+        for child in child_links(parent, html):
+            if child == link:
+                continue
+            yield scrapy.Request(
+                URL_BASE + child,
+                callback=self.parse_child,
+                headers=HEADERS,
+                meta={"link": child, "parent": parent},
+            )
 
 
 class ScpOffsetSpider(scrapy.Spider):
-    """
-    抓offset内容
-    """
-    name = 'offset'
-    allowed_domains = 'scp-wiki-cn.wikidot.com'
-    start_urls = [(URL_BASE + link + '/offset/1') for link in get_all_link()]
-    handle_httpstatus_list = [404]  # 处理404页面，否则将会跳过
+    """Backfill offset and fragment pages linked from details already saved."""
+
+    name = "offset"
+    allowed_domains = ["scp-wiki-cn.wikidot.com"]
+    handle_httpstatus_list = [404]
+
+    def start_requests(self):
+        for link in _saved_child_links():
+            yield scrapy.Request(
+                URL_BASE + link,
+                callback=self.parse,
+                headers=HEADERS,
+                meta={"link": link, "parent": link.split("/offset/")[0]},
+            )
 
     def parse(self, response):
-        dom = pq(response.body)
-        if response.status != 404 and len(list(dom.find('#page-content .list-pages-box .list-pages-item'))) > 0:
-            detail_dom = response.css('div#page-content')[0]
-            offset_index = int(response.url.split('/')[-1])  # .../scp-xxx/offset/x
-            link = response.url.replace('https://','').replace('http://','').replace('scp-wiki-cn.wikidot.com', '')
-            detail_item = ScpDetailItem(link=link, detail=detail_dom.extract().replace('  ', '').replace('\n', ''),
-                                        not_found=0, tags='')
-            yield detail_item
-            offset_request = scrapy.Request(response.url[0:-1] + str(offset_index + 1), callback=parse_offset,
-                                            headers=HEADERS, dont_filter=True)
-            yield offset_request
-        # yield detail_item
+        yield from ScpDetailSpider.parse_child(self, response)
 
 
-def parse_offset(response):
-    if response.status != 404 and len(response.css('#page-content .list-pages-box.list-page-item')) > 0:
-        # offset为空不是404，需要判断这个标签内容是不是为空
-        detail_dom = response.css('div#main-content')[0]
-        offset_index = int(response.url.split('/')[-1])  # .../scp-xxx/offset/x
-        link = response.url[30:]
-        title = response.css('div#page-title')[0].css('::text').extract()[0].strip() + '-offset-' + str(offset_index)
-        offset_item = ScpBaseItem(index=0, link=link, title=title, scp_type=DATA_TYPE['offset'])
-        detail_item = ScpDetailItem(link=link, detail=detail_dom.extract().replace('  ', '').replace('\n', ''),
-                                    not_found=0, tags='')
-        yield offset_item
-        yield detail_item
-        offset_request = scrapy.Request(response.url[0:-1] + str(offset_index + 1), callback=parse_offset,
-                                        headers=HEADERS, dont_filter=True)
-        yield offset_request
-
+def emit_catalog(response):
+    scp_type = get_type_by_url(response.url)
+    if scp_type < 0:
+        return
+    document = document_of(response.text)
+    for item in parse_html(document, scp_type, page_number(response.url)):
+        yield item

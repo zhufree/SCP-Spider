@@ -1,33 +1,24 @@
 # -*- coding: utf-8 -*-
+import os
+import sys
+from pathlib import Path
 
-from .db_constants import CATE_DB_NAME, TEST_DB_NAME, DETAIL_DB_NAME, CREATE_DB_SCP_SQL, CREATE_DB_DETAIL_SQL
-from .util import *
+from .db_constants import ensure_databases
+
+SCP_DIR = Path(__file__).resolve().parent
 
 
-# 初始化数据库
 def init_database():
-    if not os.path.exists(CATE_DB_NAME):
-        con = sqlite3.connect(CATE_DB_NAME)
-        cur = con.cursor()
-        cur.execute(CREATE_DB_SCP_SQL)
-        # cur.execute(CREATE_DB_DETAIL_SQL)
-        con.commit()
-        con.close()
-    if not os.path.exists(DETAIL_DB_NAME):
-        con = sqlite3.connect(DETAIL_DB_NAME)
-        cur = con.cursor()
-        # cur.execute(CREATE_DB_SCP_SQL)
-        cur.execute(CREATE_DB_DETAIL_SQL)
-        con.commit()
-        con.close()
-    if not os.path.exists(TEST_DB_NAME):
-        test_con = sqlite3.connect(TEST_DB_NAME)
-        test_cur = test_con.cursor()
-        test_cur.execute(CREATE_DB_SCP_SQL)
-        test_cur.execute(CREATE_DB_DETAIL_SQL)
-        test_con.commit()
-        test_con.close()
+    ensure_databases()
 
 
 def crawl_this_spider(spider_name):
-    os.system('cd scp/scrapy_spider && scrapy crawl ' + spider_name)
+    if str(SCP_DIR) not in sys.path:
+        sys.path.insert(0, str(SCP_DIR))
+    os.environ["SCRAPY_SETTINGS_MODULE"] = "scrapy_spider.settings"
+    from scrapy.crawler import CrawlerProcess
+    from scrapy.utils.project import get_project_settings
+
+    process = CrawlerProcess(get_project_settings())
+    process.crawl(spider_name)
+    process.start()

@@ -1,10 +1,10 @@
 from .core import init_database, crawl_this_spider
 import sys
 
-# 2023.12.6 last update category
 # python -m scp main
-# category = main + single
-# detail = detail + offset
+# python -m scp single
+# python -m scp detail
+# python -m scp offset
 options = sys.argv[1:]
 init_database()
 if not {'main', 'single', 'offset', 'detail', 'test'} & set(options):

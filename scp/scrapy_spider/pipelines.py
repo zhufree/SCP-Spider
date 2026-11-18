@@ -1,70 +1,86 @@
 # -*- coding: utf-8 -*-
-# Define your item pipelines here
-#
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
+import logging
 import sqlite3
-from .spiders.constants import CATE_DB_NAME, DETAIL_DB_NAME, TEST_DB_NAME, DATA_TYPE
-from .items import *
 
-need_check_data_type = [DATA_TYPE['reports-interviews-and-logs'], DATA_TYPE['art']]  # 需要去重的type
+from db_constants import ensure_databases
+from .items import ScpBaseItem, ScpDetailItem
+from .links import normalize_link
+from .spiders.constants import CATE_DB_NAME, DETAIL_DB_NAME, TEST_DB_NAME
+
+logger = logging.getLogger(__name__)
 
 
-def check_if_link_exist(cursor, url, scp_type):
-    cursor.execute(
-        "SELECT * FROM scps WHERE link = '{}' and scp_type = {}".format(
-            url, scp_type
-        ))
-    if cursor.fetchone() is None:
+def _value(item, key, default=""):
+    if key not in item or item[key] is None:
+        return default
+    return item[key]
+
+
+def upsert_category(cursor, item):
+    link = normalize_link(_value(item, "link"))
+    if not link:
         return False
-    else:
-        return True
+    cursor.execute(
+        '''
+        INSERT INTO scps (_index, title, link, scp_type, sub_scp_type, author, created_time)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(link, scp_type) DO UPDATE SET
+          _index = excluded._index,
+          title = excluded.title,
+          sub_scp_type = excluded.sub_scp_type,
+          author = CASE
+            WHEN excluded.author IS NOT NULL AND excluded.author != '' THEN excluded.author
+            ELSE scps.author
+          END,
+          created_time = CASE
+            WHEN excluded.created_time IS NOT NULL AND excluded.created_time != '' THEN excluded.created_time
+            ELSE scps.created_time
+          END
+        ''',
+        (
+            int(_value(item, "index", 0) or 0),
+            _value(item, "title") or link,
+            link,
+            int(_value(item, "scp_type", 0) or 0),
+            _value(item, "sub_scp_type"),
+            _value(item, "author"),
+            _value(item, "created_time"),
+        ),
+    )
+    return True
 
 
-def write_to_db(cate_cur, detail_cur, scp_item):
-    """
-    insert scp_item into db
-    """
-    try:
-        link = scp_item['link']
-        if len(link) <= 1 or ('http' in link and 'scp-wiki-cn.wikidot.com' not in link):
-            return
-        else:
-            if 'https://scp-wiki-cn.wikidot.com' in link:
-                link = link.replace('https://scp-wiki-cn.wikidot.com', '')
-            elif 'http://scp-wiki-cn.wikidot.com' in link:
-                link = link.replace('http://scp-wiki-cn.wikidot.com', '')
-            detail_cur.execute('''insert or ignore into scp_detail (link) values (?)''', (link,))
-        if type(scp_item) == ScpBaseItem:
-            print(scp_item['title'])
-            if scp_item['scp_type'] in need_check_data_type:
-                if not check_if_link_exist(cate_cur, link, scp_item['scp_type']):
-                    cate_cur.execute(
-                        '''insert into scps (_index, title, link, scp_type, sub_scp_type) values (?,?,?,?,?)''',
-                        (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['sub_scp_type'],))
-            else:
-                cate_cur.execute(
-                    '''insert into scps (_index, title, link, scp_type, sub_scp_type) values (?,?,?,?,?)''',
-                    (scp_item['index'], scp_item['title'], link, scp_item['scp_type'], scp_item['sub_scp_type'],))
-    except Exception as e:
-        print(e)
+def ensure_detail_row(cursor, link):
+    cursor.execute("INSERT OR IGNORE INTO scp_detail (link) VALUES (?)", (link,))
 
 
-replace_link_dict = {
-    '/scp-es-026': '/scp-179',
-    '/scp-1001-ru': '/scp-2470',
-    '/scp-1047-j': '/joke-scps',
-}
-
-
-def update_detail_in_db(cur, detail_item):
-    cur.execute('''INSERT OR REPLACE INTO scp_detail (link, detail, not_found, tags) values (?,?,?,?)''',
-                (detail_item['link'], detail_item['detail'], detail_item['not_found'], detail_item['tags'],))
+def upsert_detail(cursor, item):
+    link = normalize_link(_value(item, "link"))
+    if not link:
+        return False
+    cursor.execute(
+        '''
+        INSERT INTO scp_detail (link, detail, not_found, tags)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(link) DO UPDATE SET
+          detail = excluded.detail,
+          not_found = excluded.not_found,
+          tags = excluded.tags
+        ''',
+        (
+            link,
+            _value(item, "detail"),
+            int(_value(item, "not_found", 0) or 0),
+            _value(item, "tags"),
+        ),
+    )
+    return True
 
 
 class ScpSpiderPipeline(object):
-
     def open_spider(self, spider):
+        ensure_databases()
+        self._pending = 0
         self.cate_con = sqlite3.connect(CATE_DB_NAME)
         self.detail_con = sqlite3.connect(DETAIL_DB_NAME)
         self.test_con = sqlite3.connect(TEST_DB_NAME)
@@ -73,22 +89,34 @@ class ScpSpiderPipeline(object):
         self.test_cur = self.test_con.cursor()
 
     def close_spider(self, spider):
-        self.cate_con.commit()
-        self.detail_con.commit()
-        self.test_con.commit()
+        self._commit()
         self.cate_con.close()
         self.detail_con.close()
         self.test_con.close()
 
-    def process_item(self, item, spider):
-        if type(item) == ScpDetailItem:
-            update_detail_in_db(self.detail_cur, item)
-        else:
-            if spider.name == 'test':
-                write_to_db(self.test_cur, self.test_cur, item)
-            else:
-                write_to_db(self.cate_cur, self.detail_cur, item)
-        return item
+    def _commit(self):
+        self.cate_con.commit()
+        self.detail_con.commit()
+        self.test_con.commit()
+        self._pending = 0
 
-    def item_completed(self, results, item, info):
+    def process_item(self, item, spider):
+        try:
+            if isinstance(item, ScpDetailItem):
+                cursor = self.test_cur if spider.name == "test" else self.detail_cur
+                upsert_detail(cursor, item)
+            elif isinstance(item, ScpBaseItem):
+                if spider.name == "test":
+                    if upsert_category(self.test_cur, item):
+                        ensure_detail_row(self.test_cur, normalize_link(item["link"]))
+                else:
+                    link = normalize_link(item.get("link"))
+                    if upsert_category(self.cate_cur, item):
+                        ensure_detail_row(self.detail_cur, link)
+            self._pending += 1
+            if self._pending >= 50:
+                self._commit()
+        except Exception:
+            logger.exception("failed to write item %s", item.get("link") if hasattr(item, "get") else item)
+            raise
         return item
